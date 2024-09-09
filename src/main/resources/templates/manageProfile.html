@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{manageUser}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+
+        <div class="row justify-content-center w-100" >
+            <div class="col-lg-12 w-100">
+                <div class="card shadow w-100">
+                    <div class="card-body w-100" th:object="${user}">
+                        <h3 class="card-title text-center mb-4">User Profile</h3>
+                        <div class="row ">
+                            <div class="col-md-6">
+                                <p><strong>Username:</strong> <span th:text="*{username}"></span> </p>
+                                <p><strong>Email:</strong><span th:text="*{email}"></span> </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>First Name:</strong><span th:text="*{firstName}"></span> </p>
+                                <p><strong>Last Name:</strong> <span th:text="*{lastName}"></span> </p>
+                            </div>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <p><strong>Password:</strong> ********</p>
+
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Avatar:</strong></p>
+                                <img th:src="@{${user.avatar}}" src="" alt="Avatar" id="avatarImage" class="img-fluid rounded-circle" style="width:150px;height:150px;object-fit: cover;">
+                            </div>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-6 d-grid">
+                                <a th:href="@{/user/change-password}" class="btn btn-primary">Change Password</a>
+                            </div>
+                            <div class="col-md-6 d-grid">
+                                <a class="btn btn-primary" onclick="document.getElementById('avatarInput').click()">Change Avatar</a>
+                                <input type="file" id="avatarInput" name="avatar" class="d-none" onchange="uploadAvatar()">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 d-grid">
+                                <button class="btn btn-success">Edit Profile</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+</div>
+</body>
+</html>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    function uploadAvatar() {
+        var fileInput = $('#avatarInput')[0];
+        var file = fileInput.files[0];
+
+        if (!file) return;
+
+        var formData = new FormData();
+        formData.append('avatar', file);
+
+        $.ajax({
+            url: '/user/change-avatar',
+            method: 'POST',
+            data: formData,
+            enctype: 'multipart/form-data',
+            contentType: false,
+            processData: false,
+            dataType: 'json',
+            cache: false,
+            success: function(data, textStatus, jqXHR) {
+               console.log(data);
+               $('#avatarImage').attr('src', data.url);
+            },
+        });
+
+
+    }
+</script>

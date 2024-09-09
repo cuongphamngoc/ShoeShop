@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="partials/header :: common-header">
+    <title>Add Product</title>
+</head>
+<style>
+    .table th, .table td {
+        text-align: center;
+        vertical-align: middle;
+    }
+    .size-item {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .size-select, .stock-input, .remove-size-btn {
+        margin: 0 5px;
+    }
+    #gallery-preview, #detail-images {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .img-thumbnail {
+
+            margin: 5px;
+        }
+        .delete-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .image-container {
+            position: relative;
+            display: inline-block;
+            margin: 5px;
+        }
+    .image-container img{
+           width:100px;
+        }
+</style>
+<body>
+<div th:replace="partials/adminNav :: navbarAdmin"></div>
+<div th:replace="partials/header :: body-scripts"></div>
+<div class="container">
+    <h1>Edit Product</h1>
+
+
+    <form enctype="multipart/form-data" method="post" th:action="@{/product/save}" th:object="${productForm}" id ="productForm">
+        <input th:field="*{id}" type="hidden"/>
+        <div class="mb-3">
+            <label class="form-label" for="title">Title</label>
+            <input class="form-control" id="title" required th:field="*{title}" type="text">
+            <div class="text-danger" th:errors="*{title}"></div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="price">Price</label>
+            <input class="form-control" id="price" required th:field="*{price}" type="number">
+            <div class="text-danger" th:errors="*{price}"></div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="categories">Categories</label>
+            <div class="form-check" th:each="category : ${allCategories}">
+                <input class="form-check-input" id="category-${category.id}" th:field="*{categories}"
+                       th:value="${category.id}"
+                       type="checkbox">
+                <label class="form-check-label" th:for="'category-' + ${category.id}"
+                       th:text="${category.name}"></label>
+            </div>
+            <div class="text-danger" th:errors="*{categories}"></div>
+        </div>
+
+
+        <div class="mb-3">
+            <label class="form-label" for="brand">Brand</label>
+            <select class="form-select" id="brand" required th:field="*{brand}">
+                <option th:each="brand : ${allBrands}" th:text="${brand.name}" th:value="${brand.id}"></option>
+            </select>
+            <div class="text-danger" th:errors="*{brand}"></div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="sizes">Sizes</label>
+            <table class="table table-bordered" id="sizesTable">
+                <thead>
+                <tr>
+                    <th>Size</th>
+                    <th>Stock</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="entry : ${productForm.sizes}">
+                    <td th:text="${entry.key}">Size ID</td>
+                    <td><input class="form-control" th:name="'sizes[' + ${entry.key} + ']'" th:value="${entry.value}"
+                               type="number"/></td>
+                    <td>
+                        <button class="btn btn-danger" th:onclick="'removeSize(' + ${entry.key} + ')'" type="button">Remove</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <div class="input-group mb-3">
+                <select class="form-select sizeSelect" id="sizeSelect">
+                    <option th:each="size : ${allSizes}" th:text="${size.value}" th:value="${size.value}">Size</option>
+                </select>
+                <input class="form-control" id="newStock" placeholder="Stock" type="number"/>
+                <button class="btn btn-primary" onclick="addSize()" type="button">Add Size</button>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="galleryImages">Gallery Images</label>
+            <input class="form-control" id="galleryImages" multiple th:field="*{galleryImages}" type="file" />
+            <div class="mt-2 d-inline-block gallery-container">
+                <th:block th:each="imagePath : ${productForm.galleryImagesDTO}">
+                    <div class="image-container" th:attr="data-image-path=${imagePath.id}">
+                        <img alt="Gallery Image" class="img-thumbnail" th:src="@{${imagePath.url}}"/>
+                        <button class="btn btn-danger btn-sm delete-btn deleteImage" data-type="gallery"
+                                th:attr="data-image-id=${imagePath.id}"
+                                type="button">×
+                        </button>
+                    </div>
+                </th:block>
+                <div class="mt-2 d-flex flex-wrap" id="galleryImagePreview"></div>
+            </div>
+            <input th:field="*{galleryImagesToDelete}" type="hidden"/>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="detailImages">Detail Images</label>
+            <input class="form-control" id="detailImages" multiple th:field="*{detailImages}" type="file"/>
+            <div class="mt-2 d-inline-block">
+                <th:block th:each="imagePath : ${productForm.detailImagesDTO}">
+                    <div class="image-container " th:attr="data-image-path=${imagePath.id}">
+                        <img alt="Detail Image" class="img-thumbnail" th:src="@{${imagePath.url}}"/>
+                        <button class="btn btn-danger btn-sm delete-btn deleteImage" data-type="detail"
+                                th:attr="data-image-id=${imagePath.id}"
+                                type="button">×
+                        </button>
+                    </div>
+                </th:block>
+                <div class="mt-2 d-flex flex-wrap" id="detailImagePreview"></div>
+            </div>
+            <input th:field="*{detailImagesToDelete}" type="hidden"/>
+        </div>
+
+        <input id="imagesToDelete" name="imagesToDelete" type="hidden"/>
+        <button class="btn btn-success my-3" type="submit">Save</button>
+        <a class="btn btn-danger ms-2 my-3" th:href="@{/product/list}">Cancel</a>
+    </form>
+</div>
+
+<script th:inline="javascript">
+    var $sizeSelect = $("#sizeSelect");
+var existingSizesObj = /*[[${productForm.sizes}]]*/ {};
+var existingSizes = new Set(Object.keys(existingSizesObj).map(Number));
+
+
+$sizeSelect.find("option").each(function () {
+  var value = parseInt($(this).val());
+  console.log("Processing Option:", value);
+  if (existingSizes.has(parseInt($(this).val()))) {
+    $(this).remove();
+  }
+});
+let galleryImagesToDelete = new Array()
+let detailImagesToDelete = new Array()
+
+
+
+$(document).ready(function () {
+  $("#galleryImages").on("change", handleImageSelection);
+  $("#detailImages").on("change", handleImageSelection);
+
+  $(document).on("click", ".deleteImage", function () {
+    const button = $(this);
+    const id = button.data("image-id");
+    console.log(id);
+    const imageContainer = button.parent();
+    imageContainer.remove();
+
+
+
+    if (button.data("type") === "gallery") {
+      galleryImagesToDelete.push(id);
+    } else {
+      detailImagesToDelete.push(id);
+    }
+
+  });
+
+  $("#productForm").on("submit", function () {
+
+
+    $("<input />")
+        .attr("type", "hidden")
+        .attr("name", "galleryImagesToDelete")
+        .attr("value", galleryImagesToDelete.toString())
+        .appendTo(this);
+
+    $("<input />")
+        .attr("type", "hidden")
+        .attr("name", "detailImagesToDelete")
+        .attr("value", detailImagesToDelete.toString())
+        .appendTo(this);
+  });
+});
+function handleImageSelection(event) {
+  const input = $(this);
+  const previewContainer =
+    input.attr("id") === "galleryImages"
+      ? "#galleryImagePreview"
+      : "#detailImagePreview";
+  const type = input.attr("id") === "galleryImages" ? "gallery" : "detail";
+  $(previewContainer).empty();
+  $.each(input[0].files, function (i, file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      let divContainer = $("<div>").attr("class", "image-container");
+      let img = $("<img>").attr("src", e.target.result);
+      img.attr("class", "image-thumbnail");
+      let button = $("<button>").attr(
+        "class",
+        "btn btn-danger btn-sm delete-btn"
+      );
+      button.attr("onclick", "deleteFromArrayFile(" + i + ", '" + type + "')");
+      button.html("x");
+      $(divContainer).append(img);
+      $(divContainer).append(button);
+      $(previewContainer).append(divContainer);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function deleteFromArrayFile(index, type) {
+  const input = type === "gallery" ? $("#galleryImages") : $("#detailImages");
+  const files = Array.from(input[0].files);
+
+  files.splice(index, 1);
+
+  const dataTransfer = new DataTransfer();
+  files.forEach((file) => dataTransfer.items.add(file));
+
+  input[0].files = dataTransfer.files;
+
+  handleImageSelection.call(input);
+}
+function removeSize(sizeId) {
+  var $row = $(`#sizesTable tbody tr:has(td:contains(${sizeId}))`);
+  var sizeText = $row.find("td:first").text();
+  $row.remove();
+
+  var newOption = `<option value="${sizeId}">${sizeText}</option>`;
+  $sizeSelect.append(newOption);
+  sortSelectOptions($sizeSelect);
+}
+function sortSelectOptions($select) {
+  var options = $select.find("option");
+
+  options.sort(function (a, b) {
+    return $(a).val() - $(b).val();
+  });
+
+  $select.empty();
+
+  $select.append(options);
+}
+function addSize() {
+  var sizeId = $sizeSelect.val();
+  var sizeText = $sizeSelect.find("option:selected").text();
+  var stock = $("#newStock").val();
+
+  if (sizeId && stock) {
+    var $table = $("#sizesTable tbody");
+    var newRow = `<tr>
+                               <td>${sizeText}</td>
+                               <td><input type="number" name="sizes[${sizeId}]" value="${stock}" class="form-control" /></td>
+                               <td><button type="button" class="btn btn-danger" onclick="removeSize(${sizeId})">Remove</button></td>
+                             </tr>`;
+    $table.append(newRow);
+    $sizeSelect.find(`option[value='${sizeId}']`).remove();
+  }
+}
+
+</script>
+</body>
+</html>

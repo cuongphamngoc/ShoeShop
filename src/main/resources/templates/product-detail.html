@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" >
+<head th:replace="partials/header :: common-header">
+
+    <title>Product Detail</title>
+
+</head>
+<style>
+
+    .gallery-images img {
+        cursor: pointer;
+        width: 100px;
+
+
+    }
+    .detail-images {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .detail-images img {
+        width: calc(33.333% - 10px);
+        height: auto;
+    }
+    .size-button.selected {
+        background-color: #007bff;
+        color: white;
+    }
+</style>
+<body class="d-flex flex-column">
+<div th:replace="partials/header :: navbar"></div>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="gallery-images">
+                <div class="main-image mt-3">
+                    <img id="mainImage" th:src="@{${product.galleryImages[0].url}}" alt="Main Image" class="img-fluid my-2" style="width:calc(600px + 1.5rem);object-fit: cover;
+">
+                </div>
+                <div class ="d-flex">
+                    <img th:each="image : ${product.galleryImages}" th:src="@{${image.url}}" alt="Gallery Image" onclick="showImage(this)" class="me-2 gallery-image" style="width:150px;    object-fit: cover;
+">
+
+                </div>
+            </div>
+
+        </div>
+        <div class="col-md-6 mt-5">
+            <h1 th:text="${product.title}"></h1>
+            <h2 style="color:red;" th:text="${product.price}"></h2>
+            <label>Size</label>
+            <div class="sizes mt-3 d-flex">
+
+
+                <div th:each="size : ${product.sizes}">
+                    <button class="btn btn-outline-primary size-button me-3" th:text="${size.value}" th:data-stock="${size.stock}" onclick="selectSize(this)"></button>
+                </div>
+            </div>
+            <div class="stock mt-3">
+                <label>Stock:</label>
+                <span id="stock" th:text="${product.sizes[0].stock}"></span>
+            </div>
+            <div class="d-flex mt-2">
+                <input type="number" id="quantity" class="form-control mt-3 w-50" placeholder="Enter quantity">
+
+            </div>
+            <button class="btn btn-success mt-3 w-50" style="background-color:black;color:white;" onclick="addToCart()"><strong>Add to Cart</strong></button>
+        </div>
+    </div>
+    <br>
+    <br>
+    <br>
+
+    <div class="row mt-5">
+        <p >
+            Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+        </p>
+        <div class="detail-images ">
+
+                <img th:each="image : ${product.detailsImages}" th:src="@{${image.url}}" alt="Detail Image">
+
+
+        </div>
+    </div>
+</div>
+<div th:replace="partials/header :: footer"> </div>
+<div th:replace="partials/header :: body-scripts"> </div>
+<script>
+    function showImage(img) {
+        document.getElementById('mainImage').src = img.src;
+    }
+
+    function selectSize(button) {
+        var buttons = document.querySelectorAll('.size-button');
+        buttons.forEach(function(btn) {
+            btn.classList.remove('selected');
+        });
+
+        button.classList.add('selected');
+
+        var stock = button.getAttribute('data-stock');
+        document.getElementById('stock').innerText = stock;
+    }
+
+    function addToCart() {
+        var quantity = document.getElementById('quantity').value;
+        var stock = document.getElementById('stock').innerText;
+
+        if (quantity === '' || quantity <= 0) {
+        Swal.fire(
+            'Error!',
+            'Please enter a valid quantity.',
+            'error'
+        );
+
+          return;
+        }
+
+        if (parseInt(quantity) > parseInt(stock)) {
+         Swal.fire(
+            'Error!',
+            'Quantity exceeds available stock.',
+            'error'
+        );
+
+            return;
+        }
+
+        // Add to cart logic here
+         Swal.fire(
+            'Success!',
+            'Added to cart successfully!',
+            'success'
+        );
+    }
+</script>
+</body>
+</html>

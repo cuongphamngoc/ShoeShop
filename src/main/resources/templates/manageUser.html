@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head th:replace="partials/header :: common-header">
+</head>
+<body>
+<div th:replace="partials/header :: navbar"></div>
+
+<style>
+    .sidebar {
+        height: 100vh;
+        padding: 15px;
+        background-color: #343a40;
+        color: #fff;
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        width: 220px;
+        z-index: 1;
+    }
+    .content {
+        margin-left: 220px;
+        padding: 15px;
+
+    }
+
+
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div th:replace="partials/userSidenav :: sidenav" class="sidebar"></div>
+
+        <!-- Content area -->
+        <div class="col py-3 content ">
+
+               <div class ="content-container w-100 h-100 p-3 m-3 d-flex justify-content-center align-items-center">
+                   <div layout:fragment="content" class="w-75 h-75"></div>
+               </div>
+
+        </div>
+    </div>
+</div>
+
+<div th:replace="partials/header :: body-scripts"></div>
+</body>
+</html>

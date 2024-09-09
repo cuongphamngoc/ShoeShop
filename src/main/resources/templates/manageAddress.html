@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{manageUser}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile</title>
+</head>
+<body>
+
+<div layout:fragment="content">
+    <h3>Manage Address</h3>
+    <table class="table">
+        <thead class="thead-dark">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Id</th>
+            <th scope="col">Name</th>
+            <th scope="col">Address</th>
+            <th scope="col">Zipcode</th>
+            <th scope="col">Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="address, iterStat : ${addresses}">
+            <td><span th:text="${iterStat.count }"></span></td>
+            <td><span th:text="${address.id}"></span></td>
+            <td><span th:text="${address.name}"></span></td>
+            <td><span th:text="${address.streetAddress + ' St, '+ address.district+ ' Dist, ' + address.city + ' City, ' + address.country}"></span></td>
+            <td><span th:text="${address.zipCode}"></span></td>
+            <td>
+                <div class="d-flex gap-2">
+                    <button class ="btn btn-primary p-2 d-inline-block me-2">Edit</button>
+                    <button class ="btn btn-danger p-2 d-inline-block">Delete</button>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <a class ="btn btn-primary mt-3" th:href="@{/user/add-address}">Add Address</a>
+
+
+</div>
+
+
+
+
+</body>
+</html>

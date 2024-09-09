@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="partials/header :: common-header">
+    <title>Add Product</title>
+</head>
+<style>
+    .table th, .table td {
+        text-align: center;
+        vertical-align: middle;
+    }
+    .size-item {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .size-select, .stock-input, .remove-size-btn {
+        margin: 0 5px;
+    }
+</style>
+<body>
+<div th:replace="partials/adminNav :: navbarAdmin"></div>
+<div th:replace="partials/header :: body-scripts"></div>
+<div class="container">
+    <h1>Add Product</h1>
+    <form th:action="@{/product/add}" th:object="${addProductForm}" method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="title" class="form-label">Title</label>
+            <input type="text" class="form-control" id="title" th:field="*{title}" required>
+            <div class="text-danger" th:errors="*{title}"></div>
+        </div>
+        <div class="mb-3">
+            <label for="price" class="form-label">Price</label>
+            <input type="number" class="form-control" id="price" th:field="*{price}" required>
+            <div class="text-danger" th:errors="*{price}"></div>
+        </div>
+        <div class="mb-3">
+            <label for="categories" class="form-label">Categories</label>
+            <div th:each="category : ${categories}">
+                <input type="checkbox" th:field="*{categories}" th:value="${category.id}"> <span th:text="${category.name}"></span><br>
+
+            </div>
+            <div class="text-danger" th:errors="*{categories}"></div>
+        </div>
+        <div class="mb-3">
+            <label for="brand" class="form-label">Brand</label>
+            <select class="form-select" id="brand" th:field="*{brand}" required>
+                <option th:each="brand : ${brands}" th:value="${brand.id}" th:text="${brand.name}"></option>
+            </select>
+            <div class="text-danger" th:errors="*{brand}"></div>
+
+        </div>
+        <div class="mb-3">
+            <label for="galleryImages" class="form-label">Gallery Images</label>
+            <input type="file" multiple class="form-control" id="galleryImages" th:field="*{galleryImages}"  required>
+            <div id="gallery-preview" class="mt-3"></div>
+            <div class="text-danger" th:errors="*{galleryImages}"></div>
+
+        </div>
+        <div class="mb-3">
+            <label for="detailImages" class="form-label">Detail Images</label>
+            <input type="file" multiple class="form-control" id="detailImages" th:field="*{detailImages}"  required>
+            <div id="detail-preview" class="mt-3"></div>
+            <div class="text-danger" th:errors="*{detailImages}"></div>
+
+        </div>
+        <div class="mb-3">
+            <label for="sizes" class="form-label">Sizes</label>
+            <table class="table" id ="sizes">
+                <thead>
+                <tr>
+                    <th>Size</th>
+                    <th>Stock</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody id="size-container">
+
+                </tbody>
+            </table>
+            <div class="text-danger" th:errors="*{sizes}"></div>
+            <button type="button" id="add-size-btn" class="btn btn-primary">Add Size</button>
+        </div>
+        <div class ="container">
+            <button type="submit" class="btn btn-success my-3">Submit</button>
+        </div>
+    </form>
+</div>
+
+<script th:inline="javascript">
+    $(document).ready(function() {
+        var sizes = /*[[${sizes}]]*/ [];
+
+        let selectedSizes = new Set();
+
+        $('#add-size-btn').click(function() {
+            let sizeDropdown = $('<select class="form-select size-select"></select>');
+            let addedSizeId = null;
+
+
+            sizes.forEach(size => {
+                if (!selectedSizes.has(''+size.id)) {
+                    sizeDropdown.append(`<option value="${size.id}">${size.value}</option>`);
+                    if (addedSizeId === null) {
+                        addedSizeId = size.id;
+                    }
+                }
+            });
+
+            if (addedSizeId !== null) {
+                selectedSizes.add(''+addedSizeId);
+            }
+
+            let stockInput = $('<input type="number" class="form-control stock-input my-3" placeholder="Stock" required>');
+            let removeBtn = $('<button type="button" class="btn btn-danger remove-size-btn my-2">Remove</button>');
+
+            let sizeRow = $('<tr class="size-item d-table-row"></tr>');
+            sizeRow.append($('<td class="d-table-cell"></td>').append(sizeDropdown));
+            sizeRow.append($('<td class="d-table-cell"></td>').append(stockInput));
+            sizeRow.append($('<td class="d-table-cell"></td>').append(removeBtn));
+
+            $('#size-container').append(sizeRow);
+
+
+
+            removeBtn.click(function() {
+                sizeRow.remove();
+                selectedSizes.delete(sizeDropdown.val());
+            });
+
+            sizeDropdown.change(function() {
+                selectedSizes.delete(''+addedSizeId);
+                selectedSizes.add($(this).val());
+                addedSizeId = $(this).val();
+                hiddenInput.attr('th:field', '*{sizes['+addedSizeId+']}');
+            });
+
+            stockInput.change(function() {
+
+                let hiddenInput = sizeRow.find('input[type="hidden"][name="sizes[' + addedSizeId + ']"]');
+
+                if (hiddenInput.length === 0) {
+                    hiddenInput = $('<input type="hidden" name="sizes[' + addedSizeId + ']" value="' + $(this).val() + '">');
+                    sizeRow.append(hiddenInput);  // Thêm hiddenInput vào sizeRow
+                }
+                else {
+                    hiddenInput.val($(this).val());
+                }
+            });
+        });
+
+        $('#galleryImages').change(function() {
+            $('#gallery-preview').empty();
+            Array.from(this.files).forEach(file => {
+
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#gallery-preview').append(`<img src="${e.target.result}" class="img-thumbnail" style="max-width: 100px; margin: 5px;">`);
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        $('#detailImages').change(function() {
+            $('#detail-preview').empty();
+            Array.from(this.files).forEach(file => {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#detail-preview').append(`<img src="${e.target.result}" class="img-thumbnail" style="max-width: 100px; margin: 5px;">`);
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+    });
+</script>
+</body>
+</html>

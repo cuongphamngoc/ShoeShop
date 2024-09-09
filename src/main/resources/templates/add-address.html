@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{manageUser}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Change Password</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <h2>Add Address</h2>
+    <form method="post" th:action="@{/user/add-address}" th:object="${address}">
+        <!-- Name -->
+        <div class="form-group row mt-3" >
+            <label for="addressName" class="col-sm-2 col-form-label">Name</label>
+            <div class="col-sm-10">
+                <input type="text"  class="form-control" id="addressName"  th:field="*{name}">
+            </div>
+            <div class="text-danger" th:errors="*{name}"></div>
+        </div>
+
+        <!--  City -->
+        <div class="form-group row mt-3">
+            <label for="city" class="col-sm-2 col-form-label">City</label>
+            <div class="col-sm-10">
+                <input type="text"  class="form-control" id="city" th:field="*{city}">
+            </div>
+            <div class="text-danger" th:errors="*{city}"></div>
+        </div>
+
+        <!-- District -->
+        <div class="form-group row mt-3">
+            <label for="district" class="col-sm-2 col-form-label">District</label>
+            <div class="col-sm-10">
+                <input type="text"  class="form-control" id="district" th:field="*{district}">
+            </div>
+            <div class="text-danger" th:errors="*{district}"></div>
+        </div>
+        <div class="form-group row mt-3">
+            <label for="streetAddress" class="col-sm-2 col-form-label">Street</label>
+            <div class="col-sm-10">
+                <input type="text"  class="form-control" id="streetAddress" th:field="*{streetAddress}">
+            </div>
+            <div class="text-danger" th:errors="*{streetAddress}"></div>
+        </div>
+        <div class="form-group row mt-3">
+            <label for="zipcode" class="col-sm-2 col-form-label">Zipcode</label>
+            <div class="col-sm-10">
+                <input type="text"  class="form-control" id="zipcode" th:field="*{zipCode}">
+            </div>
+            <div class="text-danger" th:errors="*{zipCode}"></div>
+        </div>
+
+        <div class="form-group row mt-3">
+            <div class="col-sm-12 text-center">
+                <button type="submit" class="btn btn-success w-50">Save</button>
+            </div>
+        </div>
+    </form>
+
+</div>
+</body>
+</html>

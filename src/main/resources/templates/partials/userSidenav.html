@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css" rel="stylesheet">
+
+<div th:fragment="sidenav">
+    <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark sidebar">
+        <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
+            <a href="/" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                <span class="fs-5 d-none d-sm-inline">Menu</span>
+            </a>
+            <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
+                <li class="nav-item">
+                    <a th:href="@{/user/my-profile}" class="nav-link align-middle px-0" >
+                        <i class="fs-4 bi-person"></i> <span class="ms-1 d-none d-sm-inline">Manage Profile</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/user/my-address}" class="nav-link align-middle px-0" >
+                        <i class="fs-4 bi-geo-alt"></i> <span class="ms-1 d-none d-sm-inline">Manage Address</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#my-orders" class="nav-link align-middle px-0" >
+                        <i class="fs-4 bi-basket"></i> <span class="ms-1 d-none d-sm-inline">My Orders</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#notifications" class="nav-link align-middle px-0" >
+                        <i class="fs-4 bi-bell"></i> <span class="ms-1 d-none d-sm-inline">Notifications</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#order-tracking" class="nav-link align-middle px-0" >
+                        <i class="fs-4 bi-truck"></i> <span class="ms-1 d-none d-sm-inline">Order Tracking</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#privacy-settings" class="nav-link align-middle px-0" >
+                        <i class="fs-4 bi-shield-lock"></i> <span class="ms-1 d-none d-sm-inline">Privacy Settings</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#delete-account" class="nav-link align-middle px-0" >
+                        <i class="fs-4 bi-x-circle"></i> <span class="ms-1 d-none d-sm-inline">Delete Account</span>
+                    </a>
+                </li>
+            </ul>
+
+        </div>
+    </div>
+</div>
+
+</html>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+        crossorigin="anonymous"></script>
