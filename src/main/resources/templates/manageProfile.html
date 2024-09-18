@@ -32,7 +32,8 @@
                             </div>
                             <div class="col-md-6">
                                 <p><strong>Avatar:</strong></p>
-                                <img th:src="@{${user.avatar}}" src="" alt="Avatar" id="avatarImage" class="img-fluid rounded-circle" style="width:150px;height:150px;object-fit: cover;">
+                                <img th:src="@{*{avatar}}"  alt="Avatar" id="avatarImage" class="img-fluid rounded-circle" style="width:150px;height:150px;object-fit: cover;">
+
                             </div>
                         </div>
                         <div class="row mb-4">
@@ -46,7 +47,7 @@
                         </div>
                         <div class="row">
                             <div class="col-12 d-grid">
-                                <button class="btn btn-success">Edit Profile</button>
+                                <a class="btn btn-success" th:href="@{/user/edit-profile}">Edit Profile</a>
                             </div>
                         </div>
                     </div>
@@ -80,7 +81,7 @@
             cache: false,
             success: function(data, textStatus, jqXHR) {
                console.log(data);
-               $('#avatarImage').attr('src', data.url);
+               $('#avatarImage').attr('src',"http://localhost:8080"+ data.url);
             },
         });
 

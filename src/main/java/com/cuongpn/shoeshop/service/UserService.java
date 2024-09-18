@@ -1,12 +1,8 @@
 package com.cuongpn.shoeshop.service;
 
 import com.cuongpn.shoeshop.dto.*;
-import com.cuongpn.shoeshop.entity.Address;
-import com.cuongpn.shoeshop.entity.Order;
 import com.cuongpn.shoeshop.entity.User;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
@@ -31,5 +27,7 @@ public interface UserService   {
     public User saveNewProfile(UserDTO userDTO);
 
     public String updateAvatar(MultipartFile multipartFile, Principal principal, HttpServletRequest request);
+
+    public void changePassword(ChangePasswordForm changePasswordForm, Principal principal);
 
 }

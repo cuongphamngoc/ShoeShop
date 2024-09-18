@@ -36,9 +36,11 @@ public class UserController {
     private final UserMapper userMapper;
 
     @GetMapping("/my-profile")
-    public String getUserProfile(Model model, Authentication authentication){
-        User user = (User) authentication.getPrincipal();
-        model.addAttribute("user", user);
+    public String getUserProfile(Model model, Principal principal){
+        String userName =  principal.getName();
+        User user = userService.findByUserName(userName);
+        model.addAttribute("user", userMapper.userToUserDTO(user));
+        System.out.println(userMapper.userToUserDTO(user));
         return "manageProfile";
     }
     @GetMapping("/edit-profile")
@@ -52,9 +54,11 @@ public class UserController {
     public String postUserProfile(@Valid @ModelAttribute("user") UserDTO userDTO,BindingResult bindingResult,
                                  Model model, Principal principal){
         if (bindingResult.hasErrors()) {
-            return "changePassword";
+            model.addAttribute("user", userDTO);
+            return "editProfile";
         }
         User user = userService.saveNewProfile(userDTO);
+        model.addAttribute("user",userMapper.userToUserDTO(user));
         model.addAttribute("message","Profile updated successfully");
 
         return "redirect:/user/my-profile";
@@ -103,12 +107,15 @@ public class UserController {
         return "changePassword";
     }
     @PostMapping("/change-password")
-    public String updatePassword(Model model, BindingResult bindingResult, @Valid @ModelAttribute("password")  ChangePasswordForm changePasswordForm, Principal principal){
+    public String updatePassword(Model model, @Valid @ModelAttribute("password")  ChangePasswordForm changePasswordForm,BindingResult bindingResult, Principal principal){
         if (bindingResult.hasErrors()) {
+            model.addAttribute("password",changePasswordForm);
             return "changePassword";
         }
+        userService.changePassword(changePasswordForm,principal);
 
-        return "";
+
+        return "redirect:/user/my-profile";
     }
     @PostMapping("/change-avatar")
     public @ResponseBody Map<String, String> changeAvatar(@RequestParam("avatar")  MultipartFile multipartFile, Principal principal, HttpServletRequest request){

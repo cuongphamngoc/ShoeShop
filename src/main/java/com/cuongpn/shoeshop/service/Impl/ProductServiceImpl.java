@@ -129,18 +129,22 @@ public class ProductServiceImpl implements ProductService {
                         .forEach(image -> detailMap.get(product.getId()).add(new ImageDTO(image.getId(), image.getImageUrl())))
         );
 
-        return (List<ProductDTO>) list.stream().map(product->
+        return (List<ProductDTO>) list.stream().map(product->{
+                    List<ProductSizeDTO> productSizeDTOList = new ArrayList<>(product.getProductSizes().stream().map(proSize ->
+                            new ProductSizeDTO(proSize.getId().getProductId(), proSize.getId().getSizeId(), proSize.getSize().getValue(), proSize.getStock())).toList());
+                    productSizeDTOList.sort((a,b)->Long.compare(a.getValue(),b.getValue()));
+                    return ProductDTO.builder().id(product.getId())
+                            .brand(product.getBrand())
+                            .title(product.getTitle())
+                            .price(CurrencyUtil.formatCurrency(product.getPrice()))
+                            .categories(product.getCategories().stream().toList())
+                            .sizes(productSizeDTOList)
+                            .galleryImages(galleryMap.get(product.getId()))
+                            .detailsImages(detailMap.get(product.getId()))
+                            .build();
+                }
 
-             ProductDTO.builder().id(product.getId())
-                    .brand(product.getBrand())
-                    .title(product.getTitle())
-                    .price(CurrencyUtil.formatCurrency(product.getPrice()))
-                    .categories(product.getCategories().stream().toList())
-                    .sizes(product.getProductSizes().stream().map(proSize->
-                            new ProductSizeDTO(proSize.getId().getProductId(),proSize.getId().getSizeId(),proSize.getSize().getValue(),proSize.getStock())).toList())
-                    .galleryImages(galleryMap.get(product.getId()))
-                    .detailsImages(detailMap.get(product.getId()))
-                    .build()
+
         ).toList();
     }
 

@@ -3,9 +3,9 @@
 <head th:replace="partials/header :: common-header">
     <title>Add Product</title>
 </head>
+<div th:replace="partials/adminNav :: navbarAdmin"></div>
 
 <body>
-<div th:replace="partials/adminNav :: navbarAdmin"></div>
 <div th:replace="partials/header :: body-scripts"></div>
 
 <div class="container mt-5">
@@ -30,7 +30,7 @@
             <td th:text="${product.title}"></td>
             <td th:text="${product.price}"></td>
             <td >
-                <ul>
+                <ul class="list-unstyled">
                     <li th:each="category : ${product.categories}" th:text="${category.name}"></li>
                 </ul>
             </td>

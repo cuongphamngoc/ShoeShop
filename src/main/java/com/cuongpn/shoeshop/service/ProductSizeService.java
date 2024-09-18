@@ -10,4 +10,7 @@ public interface ProductSizeService {
     public ProductSize addProductSize(Product product, Size size, int Stock);
 
     public Optional<ProductSize> findById(Product product, Size size);
+    public Optional<ProductSize> findById(Long product, Long size);
+
+    public ProductSize saveProductSize(ProductSize productSize);
 }

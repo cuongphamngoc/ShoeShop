@@ -2,7 +2,6 @@ package com.cuongpn.shoeshop.service.Impl;
 
 import com.cuongpn.shoeshop.dto.*;
 import com.cuongpn.shoeshop.entity.Address;
-import com.cuongpn.shoeshop.entity.Product;
 import com.cuongpn.shoeshop.entity.Role;
 import com.cuongpn.shoeshop.entity.User;
 import com.cuongpn.shoeshop.repository.RoleRepository;
@@ -16,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
@@ -103,7 +103,7 @@ public class UserServiceImpl implements UserService {
         existingUser.setFirstName(userDTO.getFirstName());
         existingUser.setLastName(userDTO.getLastName());
         existingUser.setEmail(userDTO.getEmail());
-
+        existingUser.setPhoneNumber(userDTO.getPhoneNumber());
         User res = userRepository.save(existingUser);
         updateUserDetailsInSession(res);
         return res;
@@ -111,15 +111,26 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public String updateAvatar(MultipartFile multipartFile, Principal principal, HttpServletRequest request) {
         String fileUrl = fileService.uploadFile(multipartFile, request, principal);
         User existingUser = userRepository.findByUsername(principal.getName()).orElseThrow(() -> new RuntimeException("Username not found " + principal.getName()));
         existingUser.setAvatar(fileUrl);
-        userRepository.save(existingUser);
+        User res = userRepository.save(existingUser);
+        System.out.println("Processing..... Save avatar....");
+        System.out.println(res.getAvatar());
         return fileUrl;
 
     }
 
+    @Override
+    public void changePassword(ChangePasswordForm changePasswordForm, Principal principal) {
+        String newPassword = changePasswordForm.getNewPassword();
+        User user = this.findByUserName(principal.getName());
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+    }
 
 
     private void updateUserDetailsInSession(User user) {

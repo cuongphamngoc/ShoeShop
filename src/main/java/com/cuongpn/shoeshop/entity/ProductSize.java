@@ -3,6 +3,8 @@ package com.cuongpn.shoeshop.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "product_size")
 @Getter
@@ -26,4 +28,7 @@ public class ProductSize {
 
     @Column(nullable = false)
     private int stock;
+
+    @OneToMany(mappedBy = "productSize",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    private List<OrderItem> orderItems;
 }

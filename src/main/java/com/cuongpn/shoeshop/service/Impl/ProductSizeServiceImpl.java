@@ -30,4 +30,14 @@ public class ProductSizeServiceImpl implements ProductSizeService {
     public Optional<ProductSize> findById(Product product, Size size) {
         return productSizeRepository.findByIdOrderBySizeValue(new ProductSizeId(product.getId(),size.getId()));
     }
+    public Optional<ProductSize> findById(Long productId, Long SizeId){
+        return productSizeRepository.findByIdOrderBySizeValue(new ProductSizeId(productId,SizeId));
+
+    }
+
+    @Override
+    public ProductSize saveProductSize(ProductSize productSize) {
+
+        return productSizeRepository.save(productSize);
+    }
 }

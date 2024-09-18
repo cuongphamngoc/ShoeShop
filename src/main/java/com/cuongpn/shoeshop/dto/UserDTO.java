@@ -8,5 +8,7 @@ public class UserDTO {
     private String username;
     private String firstName;
     private String lastName;
+    private String phoneNumber;
+    private String avatar;
     private String email;
 }

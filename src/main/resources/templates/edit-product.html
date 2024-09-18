@@ -107,7 +107,7 @@
                     <option th:each="size : ${allSizes}" th:text="${size.value}" th:value="${size.value}">Size</option>
                 </select>
                 <input class="form-control" id="newStock" placeholder="Stock" type="number"/>
-                <button class="btn btn-primary" onclick="addSize()" type="button">Add Size</button>
+                <button class="btn btn-primary" id ="addButton" onclick="addSize()" type="button">Add Size</button>
             </div>
         </div>
 
@@ -116,15 +116,15 @@
             <input class="form-control" id="galleryImages" multiple th:field="*{galleryImages}" type="file" />
             <div class="mt-2 d-inline-block gallery-container">
                 <th:block th:each="imagePath : ${productForm.galleryImagesDTO}">
-                    <div class="image-container" th:attr="data-image-path=${imagePath.id}">
+                    <div class="image-container me-3" th:attr="data-image-path=${imagePath.id}">
                         <img alt="Gallery Image" class="img-thumbnail" th:src="@{${imagePath.url}}"/>
-                        <button class="btn btn-danger btn-sm delete-btn deleteImage" data-type="gallery"
+                        <button class="btn btn-danger btn-sm delete-btn deleteImage me-0" data-type="gallery"
                                 th:attr="data-image-id=${imagePath.id}"
                                 type="button">×
                         </button>
                     </div>
                 </th:block>
-                <div class="mt-2 d-flex flex-wrap" id="galleryImagePreview"></div>
+                <div class="mt-2 d-inline-block " id="galleryImagePreview"></div>
             </div>
             <input th:field="*{galleryImagesToDelete}" type="hidden"/>
         </div>
@@ -132,17 +132,17 @@
         <div class="mb-3">
             <label class="form-label" for="detailImages">Detail Images</label>
             <input class="form-control" id="detailImages" multiple th:field="*{detailImages}" type="file"/>
-            <div class="mt-2 d-inline-block">
+            <div class="mt-2 d-inline-block ">
                 <th:block th:each="imagePath : ${productForm.detailImagesDTO}">
-                    <div class="image-container " th:attr="data-image-path=${imagePath.id}">
+                    <div class="image-container me-3" th:attr="data-image-path=${imagePath.id}">
                         <img alt="Detail Image" class="img-thumbnail" th:src="@{${imagePath.url}}"/>
-                        <button class="btn btn-danger btn-sm delete-btn deleteImage" data-type="detail"
+                        <button class="btn btn-danger btn-sm delete-btn deleteImage me-0" data-type="detail"
                                 th:attr="data-image-id=${imagePath.id}"
                                 type="button">×
                         </button>
                     </div>
                 </th:block>
-                <div class="mt-2 d-flex flex-wrap" id="detailImagePreview"></div>
+                <div class="mt-2 d-inline-block " id="detailImagePreview"></div>
             </div>
             <input th:field="*{detailImagesToDelete}" type="hidden"/>
         </div>
@@ -157,7 +157,7 @@
     var $sizeSelect = $("#sizeSelect");
 var existingSizesObj = /*[[${productForm.sizes}]]*/ {};
 var existingSizes = new Set(Object.keys(existingSizesObj).map(Number));
-
+var $addButton = $("#addButton");
 
 $sizeSelect.find("option").each(function () {
   var value = parseInt($(this).val());
@@ -166,6 +166,16 @@ $sizeSelect.find("option").each(function () {
     $(this).remove();
   }
 });
+checkSizeSelect();
+function checkSizeSelect() {
+    if ($sizeSelect.children('option').length === 0) {
+        $sizeSelect.append('<option value="" disabled>Đã chọn hết size</option>');
+        $addButton.prop('disabled', true);
+    } else {
+        $sizeSelect.find('option[value=""]').remove(); // Xóa tùy chọn "Đã chọn hết size" nếu có
+        $addButton.prop('disabled', false);
+    }
+}
 let galleryImagesToDelete = new Array()
 let detailImagesToDelete = new Array()
 
@@ -219,12 +229,12 @@ function handleImageSelection(event) {
   $.each(input[0].files, function (i, file) {
     const reader = new FileReader();
     reader.onload = function (e) {
-      let divContainer = $("<div>").attr("class", "image-container");
+      let divContainer = $("<div>").attr("class", "image-container me-3");
       let img = $("<img>").attr("src", e.target.result);
       img.attr("class", "image-thumbnail");
       let button = $("<button>").attr(
         "class",
-        "btn btn-danger btn-sm delete-btn"
+        "btn btn-danger btn-sm delete-btn me-0"
       );
       button.attr("onclick", "deleteFromArrayFile(" + i + ", '" + type + "')");
       button.html("x");
@@ -255,6 +265,7 @@ function removeSize(sizeId) {
 
   var newOption = `<option value="${sizeId}">${sizeText}</option>`;
   $sizeSelect.append(newOption);
+  checkSizeSelect();
   sortSelectOptions($sizeSelect);
 }
 function sortSelectOptions($select) {
@@ -282,6 +293,7 @@ function addSize() {
                              </tr>`;
     $table.append(newRow);
     $sizeSelect.find(`option[value='${sizeId}']`).remove();
+    checkSizeSelect();
   }
 }
 

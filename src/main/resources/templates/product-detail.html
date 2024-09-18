@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" >
+<html lang="en" xmlns:th="http://www.w3.org./1999/xhtml" xmlns:sec="http://www.w3.org./1999/xhtml">
 <head th:replace="partials/header :: common-header">
 
     <title>Product Detail</title>
@@ -20,6 +20,7 @@
     }
     .detail-images img {
         width: calc(33.333% - 10px);
+        min-width:150px;
         height: auto;
     }
     .size-button.selected {
@@ -31,13 +32,13 @@
 <div th:replace="partials/header :: navbar"></div>
 <div class="container mt-5">
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-6 col-sm-12">
             <div class="gallery-images">
                 <div class="main-image mt-3">
-                    <img id="mainImage" th:src="@{${product.galleryImages[0].url}}" alt="Main Image" class="img-fluid my-2" style="width:calc(600px + 1.5rem);object-fit: cover;
+                    <img id="mainImage" th:src="@{${product.galleryImages[0].url}}" alt="Main Image" class="img-fluid my-2" style="width:calc(600px + 1.5rem);object-fit: cover;min-width:150px;
 ">
                 </div>
-                <div class ="d-flex">
+                <div class ="d-flex flex-wrap">
                     <img th:each="image : ${product.galleryImages}" th:src="@{${image.url}}" alt="Gallery Image" onclick="showImage(this)" class="me-2 gallery-image" style="width:150px;    object-fit: cover;
 ">
 
@@ -45,15 +46,15 @@
             </div>
 
         </div>
-        <div class="col-md-6 mt-5">
+        <div class="col-md-6 col-sm-12 mt-5">
             <h1 th:text="${product.title}"></h1>
             <h2 style="color:red;" th:text="${product.price}"></h2>
             <label>Size</label>
             <div class="sizes mt-3 d-flex">
 
 
-                <div th:each="size : ${product.sizes}">
-                    <button class="btn btn-outline-primary size-button me-3" th:text="${size.value}" th:data-stock="${size.stock}" onclick="selectSize(this)"></button>
+                <div th:each="size, iterStat : ${product.sizes}">
+                    <button class="btn btn-outline-primary size-button me-3" th:disabled="${size.stock} == 0 ? 'true':'false'" th:data-size-id="${size.size_id}" th:text="${size.value}" th:data-stock="${size.stock}" th:classappend="${iterStat.index == 0} ? 'selected' : ''" onclick="selectSize(this)"></button>
                 </div>
             </div>
             <div class="stock mt-3">
@@ -64,7 +65,9 @@
                 <input type="number" id="quantity" class="form-control mt-3 w-50" placeholder="Enter quantity">
 
             </div>
-            <button class="btn btn-success mt-3 w-50" style="background-color:black;color:white;" onclick="addToCart()"><strong>Add to Cart</strong></button>
+            <a class="btn btn-dark mt-3 w-50"  sec:authorize="isAnonymous()" th:href="@{/login}">My Account </a>
+
+            <button class="btn btn-dark mt-3 w-50" sec:authorize="isAuthenticated()" onclick="addToCart()"><strong>Add to Cart</strong></button>
         </div>
     </div>
     <br>
@@ -85,12 +88,16 @@
 </div>
 <div th:replace="partials/header :: footer"> </div>
 <div th:replace="partials/header :: body-scripts"> </div>
-<script>
+<script th:inline="javascript">
+    var selectedSizeId = /*[[${product.sizes[0].size_id}]]*/
+    console.log(selectedSizeId);
+
     function showImage(img) {
         document.getElementById('mainImage').src = img.src;
     }
 
     function selectSize(button) {
+        selectedSizeId = button.getAttribute('data-size-id');
         var buttons = document.querySelectorAll('.size-button');
         buttons.forEach(function(btn) {
             btn.classList.remove('selected');
@@ -107,32 +114,61 @@
         var stock = document.getElementById('stock').innerText;
 
         if (quantity === '' || quantity <= 0) {
-        Swal.fire(
-            'Error!',
-            'Please enter a valid quantity.',
-            'error'
-        );
+            Swal.fire(
+                'Error!',
+                'Please enter a valid quantity.',
+                'error'
+            );
 
           return;
         }
 
         if (parseInt(quantity) > parseInt(stock)) {
-         Swal.fire(
-            'Error!',
-            'Quantity exceeds available stock.',
-            'error'
-        );
+             Swal.fire(
+                'Error!',
+                'Quantity exceeds available stock.',
+                'error'
+            );
 
             return;
         }
 
-        // Add to cart logic here
-         Swal.fire(
-            'Success!',
-            'Added to cart successfully!',
-            'success'
-        );
+        $.ajax({
+            url: '/shopping-cart/add',
+            type: 'POST',
+            data: JSON.stringify({
+                    "product_id": /*[[${product.id}]]*/,
+                    "size_id": selectedSizeId,
+                    "qty": quantity
+                }),
+
+            contentType: "application/json; charset=utf-8",
+            success: function(result) {
+                Swal.fire(
+                    'Success!',
+                    'Added to cart successfully!',
+                    'success'
+                );
+                document.getElementById('quantity').value= "";
+                document.getElementById('stock').innerText = stock - quantity;
+
+            },
+            error: function(xhr, status, error) {
+                Swal.fire(
+                    'Error!',
+                    'There was an error adding the product to cart.',
+                    'error'
+                );
+            }
+        });
+
     }
+    document.addEventListener('DOMContentLoaded', function() {
+            var firstSizeButton = document.querySelector('button[data-size-id]');
+            if (firstSizeButton) {
+                selectSize(firstSizeButton);
+            }
+        });
 </script>
 </body>
 </html>

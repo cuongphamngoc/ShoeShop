@@ -24,9 +24,10 @@ public class User implements UserDetails {
     private String password;
     private String firstName;
     private String lastName;
+    private String phoneNumber;
     private String avatar;
     private String email;
-    @OneToMany(cascade= CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true,mappedBy = "user")
+    @OneToMany(cascade= CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true,mappedBy = "user")
     private Set<Address> address = new HashSet<>();
     @ManyToMany(cascade = CascadeType.MERGE ,fetch = FetchType.EAGER)
     @JoinTable(
