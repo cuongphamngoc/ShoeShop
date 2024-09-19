@@ -1,5 +1,7 @@
 package com.cuongpn.shoeshop.service.Impl;
 
+import com.cuongpn.shoeshop.service.ExchangeRateService;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -10,7 +12,8 @@ import java.math.RoundingMode;
 import java.util.Map;
 
 @Service
-public class ExchangeRateServiceImpl {
+
+public class ExchangeRateServiceImpl implements ExchangeRateService {
     @Value("${openexchangerates.api.key}")
     private String apiKey;
     private static final String EXCHANGE_RATE_URL = "https://openexchangerates.org/api/latest.json?app_id=";

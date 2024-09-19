@@ -79,4 +79,8 @@ public class CheckoutController {
         //return paymentPage;
         return paymentProvider.createPayment(order);
     }
+    @PostMapping("/callback/stripe")
+    public String placeOrderSuccess(){
+        return "checkout-completed-order";
+    }
 }

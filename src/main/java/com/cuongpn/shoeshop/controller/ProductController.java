@@ -91,7 +91,7 @@ public class ProductController {
         return "product-list";
     }
     @DeleteMapping("/product/{id}")
-    public @ResponseBody String deleteProduct(@PathVariable(value = "id",required = true) Long id){
+    public @ResponseBody String deleteProduct(@PathVariable(value = "id",required = true) Long id) throws IOException {
         return productService.deleteProduct(id);
     }
     @GetMapping("/product/edit/{id}")

@@ -14,6 +14,41 @@ body {
   background-color: #f1f1f1;
 }
 
+.avatar-container {
+    position: relative;
+    display: inline-block;
+}
+
+.avatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.edit-avatar-btn {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+
+    color: white;
+    border: none;
+    border-radius: 50%;
+    padding: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.edit-avatar-btn i {
+    font-size: 16px;
+}
+.badge {
+    background-color: #ffffff; /* Màu trắng */
+    color: #000000; /* Màu đen */
+    border: 1px solid #000000; /* Viền màu đen */
+}
 a {
 	color: #606975;
 }

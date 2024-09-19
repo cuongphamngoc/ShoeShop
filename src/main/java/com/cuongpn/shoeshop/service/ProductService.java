@@ -26,7 +26,7 @@ public interface ProductService {
 
     public ProductDTO getProductDto(Long id);
 
-    public String deleteProduct(Long id);
+    public String deleteProduct(Long id) throws IOException;
 
     public ProductForm getProductFormById(Long id);
 

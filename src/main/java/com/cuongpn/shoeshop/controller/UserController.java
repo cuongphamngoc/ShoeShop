@@ -3,14 +3,11 @@ package com.cuongpn.shoeshop.controller;
 import com.cuongpn.shoeshop.dto.AddressDTO;
 import com.cuongpn.shoeshop.dto.ChangePasswordForm;
 import com.cuongpn.shoeshop.dto.UserDTO;
-import com.cuongpn.shoeshop.entity.Address;
 import com.cuongpn.shoeshop.entity.Order;
 import com.cuongpn.shoeshop.entity.User;
 import com.cuongpn.shoeshop.mapper.UserMapper;
 import com.cuongpn.shoeshop.service.OrderService;
 import com.cuongpn.shoeshop.service.UserService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -21,6 +18,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
@@ -118,7 +116,7 @@ public class UserController {
         return "redirect:/user/my-profile";
     }
     @PostMapping("/change-avatar")
-    public @ResponseBody Map<String, String> changeAvatar(@RequestParam("avatar")  MultipartFile multipartFile, Principal principal, HttpServletRequest request){
+    public @ResponseBody Map<String, String> changeAvatar(@RequestParam("avatar")  MultipartFile multipartFile, Principal principal, HttpServletRequest request) throws IOException {
         String fileUrl = userService.updateAvatar(multipartFile, principal, request);
 
         Map<String, String> response = new HashMap<>();

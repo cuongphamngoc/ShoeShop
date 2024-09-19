@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,7 +32,7 @@ public class ProductServiceImpl implements ProductService {
     private final BrandService brandService;
     private final SizeService sizeService;
     private final ProductSizeService productSizeService;
-    private final FileService fileService;
+    private final FileUpLoadService fileService;
     private final ProductImageService productImageService;
 
     @Override
@@ -44,7 +45,7 @@ public class ProductServiceImpl implements ProductService {
         Sort sort = SortFilter.getSort(productFilterForm.getSortType());
         Pageable pageable = PageRequest.of(productFilterForm.getPageNo(), productFilterForm.getPageSize(), sort);
         Specification<Product> specification = ProductSpecification.buildFilter(productFilterForm.getSize(),productFilterForm.getCategory(),productFilterForm.getBrand(),productFilterForm.getSearchKey(),productFilterForm.getPriceLow(),productFilterForm.getPriceHigh());
-        return productRepository.findAll(pageable);
+        return productRepository.findAll(specification,pageable);
 
 
     }
@@ -57,7 +58,9 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public String addNewProduct(AddProductForm addProductForm) throws IOException {
+        long startTime = System.nanoTime();
 
         Brand brand = brandService.findById(addProductForm.getBrand());
         Set<Category> categorySet = categoryService.findAllById(addProductForm.getCategories());
@@ -83,24 +86,47 @@ public class ProductServiceImpl implements ProductService {
         }
         Set<ProductImage> productImages = new HashSet<>();
         String thumbnail = "";
-        for(MultipartFile images : addProductForm.getGalleryImages()){
-            String imageUrl = fileService.uploadImage(images);
+        String folder = "product";
+
+        MultipartFile [] galleryImages  = addProductForm.getGalleryImages();
+        List<Map<String,String>> imageResponse = fileService.uploadMultipleFiles(galleryImages,folder);
+        for(Map<String,String> image : imageResponse){
             if(thumbnail.isEmpty()){
-                thumbnail= imageUrl;
+                thumbnail= image.get("secure_url");
 
             }
-            ProductImage productImage = productImageService.addNewProductImage(imageUrl,current,ImageType.GALLERY);
+            ProductImage productImage = productImageService.addNewProductImage(image.get("secure_url"),image.get("public_id"),current,ImageType.GALLERY);
             productImages.add(productImage);
         }
+        /*for(MultipartFile images : addProductForm.getGalleryImages()){
+            Map map  = fileService.uploadImage(images,folder);
+            if(thumbnail.isEmpty()){
+                thumbnail= map.get("secure_url").toString();
 
-        for(MultipartFile images : addProductForm.getDetailImages()){
-            String imageUrl = fileService.uploadImage(images);
-            ProductImage productImage = productImageService.addNewProductImage(imageUrl,current,ImageType.DETAIL);
+            }
+            ProductImage productImage = productImageService.addNewProductImage(map.get("secure_url").toString(),map.get("public_id").toString(),current,ImageType.GALLERY);
+            productImages.add(productImage);
+        }*/
+        MultipartFile [] detailImages  = addProductForm.getDetailImages();
+        List<Map<String,String>> imageResponse2 = fileService.uploadMultipleFiles(detailImages,folder);
+        for(Map<String,String> image : imageResponse2){
+            ProductImage productImage = productImageService.addNewProductImage(image.get("secure_url"),image.get("public_id"),current,ImageType.DETAIL);
             productImages.add(productImage);
         }
+//        for(MultipartFile images : addProductForm.getDetailImages()){
+//            Map map  = fileService.uploadImage(images,folder);
+//            ProductImage productImage = productImageService.addNewProductImage(map.get("secure_url").toString(),map.get("public_id").toString(),current,ImageType.DETAIL);
+//            productImages.add(productImage);
+//        }
         current.setThumbnailImageUrl(thumbnail);
         current.getProductImages().addAll(productImages);
         productRepository.save(current);
+        long endTime = System.nanoTime();
+
+        // Tính toán thời gian thực thi
+        long duration = (endTime - startTime); // Đơn vị: nano giây
+
+        System.out.println("Thời gian thực thi: " + duration + " nano giây");
         return "Success";
 
 
@@ -184,7 +210,12 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public String deleteProduct(Long id) {
+    public String deleteProduct(Long id) throws IOException {
+        Product product = productRepository.findById(id).orElseThrow();
+        Set<ProductImage> productImages = product.getProductImages();
+        for(ProductImage productImage: productImages){
+            Map res = fileService.destroyImage(productImage.getPublic_id());
+        }
         productRepository.deleteById(id);
         return "success";
     }
@@ -259,11 +290,12 @@ public class ProductServiceImpl implements ProductService {
         }
         Set<ProductImage> galleryProductImageSet = new HashSet<>(productImageService.findByProductAndType(product, ImageType.GALLERY));
         Set<ProductImage> detailProductImageSet = new HashSet<>(productImageService.findByProductAndType(product, ImageType.DETAIL));
-
+        String folder = "product";
         for(MultipartFile multipartFile:productForm.getGalleryImages()){
             if(!multipartFile.isEmpty()){
-                String url = fileService.uploadImage(multipartFile);
-                ProductImage productImage = productImageService.addNewProductImage(url,product,ImageType.GALLERY);
+                Map response  = fileService.uploadImage(multipartFile,folder);
+
+                ProductImage productImage = productImageService.addNewProductImage(response.get("secure_url").toString(),response.get("public_id").toString(),product,ImageType.GALLERY);
                 galleryProductImageSet.add(productImage);
             }
 
@@ -271,8 +303,8 @@ public class ProductServiceImpl implements ProductService {
         }
         for(MultipartFile multipartFile:productForm.getDetailImages()){
             if(!multipartFile.isEmpty()){
-                String url = fileService.uploadImage(multipartFile);
-                ProductImage productImage = productImageService.addNewProductImage(url,product,ImageType.DETAIL);
+                Map response  = fileService.uploadImage(multipartFile,folder);
+                ProductImage productImage = productImageService.addNewProductImage(response.get("secure_url").toString(),response.get("public_id").toString(),product,ImageType.DETAIL);
                 detailProductImageSet.add(productImage);
             }
         }

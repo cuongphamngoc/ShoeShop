@@ -25,6 +25,7 @@ public class User implements UserDetails {
     private String firstName;
     private String lastName;
     private String phoneNumber;
+    private String avatar_public_id;
     private String avatar;
     private String email;
     @OneToMany(cascade= CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true,mappedBy = "user")

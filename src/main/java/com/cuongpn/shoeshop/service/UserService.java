@@ -5,6 +5,7 @@ import com.cuongpn.shoeshop.entity.User;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 
@@ -26,7 +27,7 @@ public interface UserService   {
 
     public User saveNewProfile(UserDTO userDTO);
 
-    public String updateAvatar(MultipartFile multipartFile, Principal principal, HttpServletRequest request);
+    public String updateAvatar(MultipartFile multipartFile, Principal principal, HttpServletRequest request) throws IOException;
 
     public void changePassword(ChangePasswordForm changePasswordForm, Principal principal);
 

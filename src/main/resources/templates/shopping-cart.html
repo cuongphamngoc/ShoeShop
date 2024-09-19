@@ -15,10 +15,10 @@
         object-fit:cover;
     }
 </style>
-<div class="container mt-5" style="min-height:80vh;">
+<div class="container mt-5" style="min-height:80vh;" id = "container-div">
     <h2 class="mb-4">Shopping Cart</h2>
-    <div th:if="${shoppingCart.cartItems.size() > 0}">
-        <table class="table table-bordered">
+    <div th:if="${shoppingCart.cartItems.size() > 0}" id ="table-div">
+        <table class="table table-bordered" >
             <thead>
             <tr>
                 <th><input type="checkbox" id="selectAll" onclick="toggle(this)"></th>
@@ -82,6 +82,8 @@
     function updateTotalPrice() {
         var totalPrice = 0;
         var checkboxes = document.getElementsByClassName('selectItem');
+        if (checkboxes == null || checkboxes.length === 0) return;
+
 
         for (var i = 0; i < checkboxes.length; i++) {
             if (checkboxes[i].checked) {
@@ -207,11 +209,20 @@ function submitCheckoutForm() {
                         );
                         // Remove selected rows from the table
                         var checkboxes = document.getElementsByClassName('selectItem');
+                        let count = 0;
                         for (var i = checkboxes.length - 1; i >= 0; i--) {
                             if (checkboxes[i].checked) {
                                 checkboxes[i].closest('tr').remove();
                             }
+                            else{
+                                count++;
+                            }
                         }
+                        if(count === 0){
+                            $("#table-div").remove();
+                            $("#container-div").append("<p>Your cart is empty.</p>");
+                        }
+                        else
                         updateTotalPrice();
 
                     },

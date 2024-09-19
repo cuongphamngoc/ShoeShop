@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface ProductImageService {
-    public ProductImage addNewProductImage(String imgUrl, Product product, ImageType imageType);
+    public ProductImage addNewProductImage(String imgUrl, String imgPublicId, Product product, ImageType imageType);
 
     public void deleteProductImageByUrl(String url);
 

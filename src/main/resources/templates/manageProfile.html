@@ -5,8 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Profile</title>
+
 </head>
+
 <body>
+
 <div layout:fragment="content">
 
 
@@ -26,23 +29,29 @@
                             </div>
                         </div>
                         <div class="row mb-4">
-                            <div class="col-md-6">
+                            <div class="col-md-6 d-flex">
                                 <p><strong>Password:</strong> ********</p>
-
+                                <a class="ms-4" th:href="@{/user/change-password}"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M7.127 22.562l-7.127 1.438 1.438-7.128 5.689 5.69zm1.414-1.414l11.228-11.225-5.69-5.692-11.227 11.227 5.689 5.69zm9.768-21.148l-2.816 2.817 5.691 5.691 2.816-2.819-5.691-5.689z"/></svg>
+                                </a>
                             </div>
                             <div class="col-md-6">
-                                <p><strong>Avatar:</strong></p>
-                                <img th:src="@{*{avatar}}"  alt="Avatar" id="avatarImage" class="img-fluid rounded-circle" style="width:150px;height:150px;object-fit: cover;">
+
 
                             </div>
                         </div>
-                        <div class="row mb-4">
-                            <div class="col-md-6 d-grid">
-                                <a th:href="@{/user/change-password}" class="btn btn-primary">Change Password</a>
-                            </div>
-                            <div class="col-md-6 d-grid">
-                                <a class="btn btn-primary" onclick="document.getElementById('avatarInput').click()">Change Avatar</a>
-                                <input type="file" id="avatarInput" name="avatar" class="d-none" onchange="uploadAvatar()">
+                        <div class="row mb-4 ">
+
+                            <div class="col-md-12 d-flex justify-content-center align-items-center">
+
+                                <div class="avatar-container">
+                                    <img th:src="@{*{avatar}}"  alt="Avatar" id="avatarImage" class="img-fluid rounded-circle" style="width:150px;height:150px;object-fit: cover;">
+                                    <button class="edit-avatar-btn" onclick="document.getElementById('avatarInput').click()">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M7.127 22.562l-7.127 1.438 1.438-7.128 5.689 5.69zm1.414-1.414l11.228-11.225-5.69-5.692-11.227 11.227 5.689 5.69zm9.768-21.148l-2.816 2.817 5.691 5.691 2.816-2.819-5.691-5.689z"/></svg>
+                                    </button>
+                                    <input id="avatarInput" type="file" class="d-none" onchange="uploadAvatar()">
+                                </div>
+
+
                             </div>
                         </div>
                         <div class="row">
@@ -81,7 +90,7 @@
             cache: false,
             success: function(data, textStatus, jqXHR) {
                console.log(data);
-               $('#avatarImage').attr('src',"http://localhost:8080"+ data.url);
+               $('#avatarImage').attr('src',data.url);
             },
         });
 

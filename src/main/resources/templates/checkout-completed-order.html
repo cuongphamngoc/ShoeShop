@@ -1,0 +1,23 @@
+<html lang="en" xmlns:th="http://www.w3.org./1999/xhtml" >
+
+<head th:replace="partials/header :: common-header">
+</head>
+
+<body class="d-flex flex-column">
+<div th:replace="partials/header :: navbar"></div>
+
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h1>Đơn hàng đã được thanh toán thành công!</h1>
+        </div>
+        <div class="card-body">
+            <p class="card-text">Cảm ơn bạn đã đặt hàng. Đơn hàng của bạn đã được tạo với mã đơn hàng: <strong th:text="${order.id}"></strong>.</p>
+            <p class ="card-text">Giá trị đơn hàng: <strong style="color:red;" th:text="${#numbers.formatDecimal(order.orderTotal, 0, 'COMMA', 0, 'POINT')} + ' đ'"> </strong></p>
+            <p class="card-text">Thời gian giao hàng dự kiến là 7 ngày.</p>
+            <a href="/" class="btn btn-primary">Quay lại trang chủ</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

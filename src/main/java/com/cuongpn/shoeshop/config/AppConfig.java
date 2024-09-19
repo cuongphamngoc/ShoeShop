@@ -1,22 +1,23 @@
 package com.cuongpn.shoeshop.config;
 
-import com.cloudinary.Cloudinary;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.scheduling.annotation.AsyncConfigurer;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.Executor;
 
 @Configuration
-public class AppConfig implements WebMvcConfigurer {
-    @Value("${CLOUDINARY_URL}")
-    private String CLOUDINARY_URL;
-    @Bean
-    public Cloudinary getCloudinary(){
-
-        return new Cloudinary(CLOUDINARY_URL);
+@EnableAsync
+public class AppConfig implements AsyncConfigurer {
+    @Override
+    public Executor getAsyncExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(5);
+        executor.setMaxPoolSize(10);
+        executor.setQueueCapacity(25);
+        executor.setThreadNamePrefix("CloudinaryUpload-");
+        executor.initialize();
+        return executor;
     }
 }

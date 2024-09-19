@@ -17,8 +17,9 @@ import java.util.Set;
 public class ProductImageServiceImpl implements ProductImageService {
     private final ProductImageRepository productImageRepository;
     @Override
-    public ProductImage addNewProductImage(String imageUrl, Product product, ImageType imageType) {
+    public ProductImage addNewProductImage(String imageUrl, String imgPublicId, Product product, ImageType imageType) {
         ProductImage productImage = ProductImage.builder()
+                .public_id(imgPublicId)
                 .imageUrl(imageUrl)
                 .imageType(imageType)
                 .product(product)
