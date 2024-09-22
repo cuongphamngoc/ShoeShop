@@ -6,5 +6,5 @@ import com.cuongpn.shoeshop.entity.Order;
 import java.util.List;
 
 public interface OrderItemService {
-    public Order addItemToOrder(Order order, List<CartItem> cartItemList);
+    void addItemToOrder(Order order, List<CartItem> cartItemList);
 }

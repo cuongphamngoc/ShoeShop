@@ -154,6 +154,7 @@
                 );
                 document.getElementById('quantity').value= "";
                 document.getElementById('stock').innerText = stock - quantity;
+                updateCartBadge(result)
 
             },
             error: function(xhr, status, error) {
@@ -166,6 +167,16 @@
         });
 
     }
+    function updateCartBadge(cartSize) {
+    var badge = document.querySelector(".badge-primary");
+
+    if (cartSize > 0) {
+        badge.textContent = cartSize;
+        badge.style.display = "inline-block";
+    } else {
+        badge.style.display = "none";
+    }
+}
     document.addEventListener('DOMContentLoaded', function() {
             var firstSizeButton = document.querySelector('button[data-size-id]');
             if (firstSizeButton) {

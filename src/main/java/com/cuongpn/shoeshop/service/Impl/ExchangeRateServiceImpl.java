@@ -1,7 +1,6 @@
 package com.cuongpn.shoeshop.service.Impl;
 
 import com.cuongpn.shoeshop.service.ExchangeRateService;
-import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -24,7 +23,10 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
         ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
         Map<String, Object> rates = (Map<String, Object>) response.getBody().get("rates");
         BigDecimal fromRate = new BigDecimal(rates.get(fromCurrency).toString());
+        System.out.println(fromRate);
         BigDecimal toRate = new BigDecimal(rates.get(toCurrency).toString());
-        return toRate.divide(fromRate, 4, RoundingMode.HALF_UP);
+        System.out.println(toRate);
+        System.out.println(toRate.divide(fromRate, 10, RoundingMode.HALF_UP));
+        return toRate.divide(fromRate, 10, RoundingMode.HALF_UP);
     }
 }

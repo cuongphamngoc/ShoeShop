@@ -1,9 +1,12 @@
 package com.cuongpn.shoeshop.service;
 
 import com.cuongpn.shoeshop.entity.Order;
+import com.stripe.exception.StripeException;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 public interface PaymentProvider {
-    public String createPayment(Order order);
+    String createPayment(Order order) throws Exception;
 
-    public String charge(Order order);
 }

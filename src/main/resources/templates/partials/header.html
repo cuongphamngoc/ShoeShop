@@ -28,7 +28,7 @@
 <body >
 <div th:fragment="navbar" class="pt-0 mt-0">
     <nav class="navbar navbar-expand-md navbar-light bg-light fixed-top shadow-sm ">
-        <a class="navbar-brand" th:href="@{/}"><strong>SHOE SHOP</strong></a>
+        <a class="navbar-brand ms-2" th:href="@{/}"><strong>SHOE SHOP</strong></a>
         <button class="navbar-toggler" type="button" data-toggle="collapse"
                 data-target="#navbarCollapse" aria-controls="navbarCollapse"
                 aria-expanded="false" aria-label="Toggle navigation">
@@ -49,7 +49,7 @@
                         </span></a>
                 </li>
             </ul>
-            <ul class="navbar-nav ms-auto font-weight-bold">
+            <ul class="navbar-nav ms-auto me-2 font-weight-bold">
                 <li class="nav-item">
                     <a class="nav-link" sec:authorize="isAnonymous()" th:href="@{/signin}">Sign In </a>
                 </li>
@@ -60,7 +60,7 @@
                     <a class="nav-link" sec:authorize="isAuthenticated()" th:href="@{/logout}"> Log Out </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" sec:authorize="hasRole('ADMIN')" th:href="@{/product/list}"> ADMIN PORTAL</a>
+                    <a class="nav-link text-dark" sec:authorize="hasRole('ADMIN')" th:href="@{/admin/product/list}"> ADMIN PORTAL</a>
                 </li>
             </ul>
         </div>
@@ -131,6 +131,7 @@
     <script type="text/javascript" src="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
     <script src="//cdn.datatables.net/2.1.5/js/dataTables.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script>
         //prevent multiple form submission
         $(function() {

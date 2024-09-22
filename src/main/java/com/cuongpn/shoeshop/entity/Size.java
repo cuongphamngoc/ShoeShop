@@ -10,6 +10,9 @@ import java.util.Set;
 @Entity
 @Getter
 @Setter
+@NamedEntityGraph(name = "size.productSizes",
+        attributeNodes = @NamedAttributeNode("productSizes")
+)
 public class Size {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)

@@ -27,8 +27,8 @@ public class ProductFilterForm {
         brand= new ArrayList<>();
 
 
-        pageNo = 0;
-        pageSize = 10;
+        pageNo = 1;
+        pageSize = 9;
         sortType = "*";
         searchKey="";
     }

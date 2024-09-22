@@ -13,7 +13,14 @@ body {
   text-align: left;
   background-color: #f1f1f1;
 }
-
+.table th, .table td {
+        text-align: center;
+        vertical-align: middle;
+}
+.product-image{
+    width:100px;
+    object-fit:cover;
+}
 .avatar-container {
     position: relative;
     display: inline-block;
@@ -75,10 +82,10 @@ a {
   flex: 1 0 auto;
   font-family: 'Roboto Slab', serif;
   color: white;
-  background-position: bottom left;
+  background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
-  height: 80%;
+  height: 100%;
 }
 
 .jumbotron h1 { 

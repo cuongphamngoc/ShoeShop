@@ -3,13 +3,13 @@ package com.cuongpn.shoeshop.service.Impl;
 import com.cuongpn.shoeshop.entity.Brand;
 import com.cuongpn.shoeshop.repository.BrandRepository;
 import com.cuongpn.shoeshop.service.BrandService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class BrandServiceImpl implements BrandService {
     private final BrandRepository brandRepository;
 

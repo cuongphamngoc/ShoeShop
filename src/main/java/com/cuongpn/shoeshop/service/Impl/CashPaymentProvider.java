@@ -14,8 +14,5 @@ public class CashPaymentProvider implements PaymentProvider {
         return "cash-completed-order";
     }
 
-    @Override
-    public String charge(Order order) {
-        return null;
-    }
+
 }

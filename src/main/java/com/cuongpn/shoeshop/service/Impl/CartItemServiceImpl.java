@@ -4,48 +4,62 @@ import com.cuongpn.shoeshop.dto.AddCartRequest;
 import com.cuongpn.shoeshop.entity.Cart;
 import com.cuongpn.shoeshop.entity.CartItem;
 import com.cuongpn.shoeshop.entity.ProductSize;
+import com.cuongpn.shoeshop.entity.User;
 import com.cuongpn.shoeshop.repository.CartItemRepository;
 import com.cuongpn.shoeshop.service.CartItemService;
+import com.cuongpn.shoeshop.service.CartService;
 import com.cuongpn.shoeshop.service.ProductSizeService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class CartItemServiceImpl implements CartItemService {
     private final ProductSizeService productSizeService;
+    private final CartService cartService;
     private final CartItemRepository cartItemRepository;
     @Override
-    public ResponseEntity<?> addItemToCart(AddCartRequest addCartRequest, Cart cart) {
-        Optional<ProductSize> optionalProductSize = productSizeService.findById(addCartRequest.getProduct_id(),addCartRequest.getSize_id());
-        if(optionalProductSize.isEmpty()) throw new RuntimeException("Product not found");
-        ProductSize productSize = optionalProductSize.get();
-        CartItem cartItem = null;
-        Optional<CartItem> optionalCartItem = cartItemRepository.findByProductSize(productSize);
-        cartItem = optionalCartItem.orElseGet(() -> CartItem.builder()
-                .qty(0)
-                .cart(cart)
-                .productSize(productSize)
-                .price(BigDecimal.valueOf(productSize.getProduct().getPrice()))
-                .build());
-
+    @Transactional
+    @CacheEvict(value = "itemCount", key = "#user.id")
+    public ResponseEntity<?> addItemToCart(AddCartRequest addCartRequest, User user) {
+        Cart cart = cartService.findCartByUser(user);
+        ProductSize productSize = productSizeService.findById(addCartRequest.getProduct_id(),
+                addCartRequest.getSize_id())
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        boolean isStockLessThanRequest = productSize.getStock() < addCartRequest.getQty();
+        if (isStockLessThanRequest) {
+            throw new RuntimeException("Insufficient stock");
+        }
+        CartItem cartItem = cartItemRepository.findByProductSize(productSize)
+                .orElseGet(()-> createNewCartItem(cart,productSize));
 
         cartItem.setQty(cartItem.getQty()+ addCartRequest.getQty());
         cartItem.setTotalPrice();
         cartItemRepository.save(cartItem);
-        productSize.setStock(productSize.getStock()- addCartRequest.getQty());
-        productSizeService.saveProductSize(productSize);
-        return ResponseEntity.ok("Success");
-    }
+        if(!cart.getCartItems().contains(cartItem)){
+            cart.getCartItems().add(cartItem);
+            cartService.saveCart(cart);
+        }
 
-    @Override
-    public Optional<CartItem> findByProductSize(ProductSize productSize) {
-        return cartItemRepository.findByProductSize(productSize);
+        updateProductStock(productSize,addCartRequest.getQty());
+
+        return ResponseEntity.ok(cart.getCartItems().size());
+    }
+    private CartItem createNewCartItem(Cart cart, ProductSize productSize) {
+        return CartItem.builder()
+                .qty(0)
+                .cart(cart)
+                .productSize(productSize)
+                .price(BigDecimal.valueOf(productSize.getProduct().getPrice()))
+                .build();
+    }
+    private void updateProductStock(ProductSize productSize, int qty) {
+        productSize.setStock(productSize.getStock() - qty);
+        productSizeService.saveProductSize(productSize);
     }
 
 

@@ -47,8 +47,5 @@ public class AuthController {
         userService.saveUser(form);
         return "redirect:/signin";
     }
-    @GetMapping("/")
-    public String getHome(){
-        return "index";
-    }
+
 }

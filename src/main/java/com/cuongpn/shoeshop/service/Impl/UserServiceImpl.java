@@ -10,6 +10,7 @@ import com.cuongpn.shoeshop.service.FileUpLoadService;
 import com.cuongpn.shoeshop.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -24,15 +25,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
     private final FileUpLoadService fileService;
+    private static final String UPLOAD_FOLDER = "avatar";
 
     @Override
     public User createUser(String username, String password, String email, List<String> role) {
@@ -115,14 +118,17 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public String updateAvatar(MultipartFile multipartFile, Principal principal, HttpServletRequest request) throws IOException {
-        String folder ="avatar";
-        Map response = fileService.uploadImage(multipartFile,folder);
+
+        CompletableFuture<Map<String,Object>> response = fileService.uploadFile(multipartFile,UPLOAD_FOLDER);
         User existingUser = userRepository.findByUsername(principal.getName()).orElseThrow(() -> new RuntimeException("Username not found " + principal.getName()));
-        existingUser.setAvatar(response.get("secure_url").toString());
-        existingUser.setAvatar_public_id(response.get("public_id").toString());
-        User res = userRepository.save(existingUser);
-        System.out.println("Processing..... Save avatar....");
-        System.out.println(res.getAvatar());
+        response.thenAccept(map->{
+
+            existingUser.setAvatar(map.get("secure_url").toString());
+            existingUser.setAvatar_public_id(map.get("public_id").toString());
+            userRepository.save(existingUser);
+        }).join();
+
+
         return existingUser.getAvatar();
 
     }

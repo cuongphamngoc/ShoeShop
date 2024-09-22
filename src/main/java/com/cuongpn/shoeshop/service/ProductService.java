@@ -6,31 +6,28 @@ import com.cuongpn.shoeshop.dto.ProductDTO;
 import com.cuongpn.shoeshop.dto.ProductFilterForm;
 import com.cuongpn.shoeshop.entity.Product;
 import org.springframework.data.domain.Page;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.IOException;
 import java.util.List;
 
 public interface ProductService {
 
-    public List<Product> getAllProduct();
+    Page<Product> getAllProduct(ProductFilterForm productFilterForm);
 
-    public Page<Product> getAllProduct(ProductFilterForm productFilterForm);
+    ProductDTO getProductDetail(Long id);
 
-    public Product getProductDetail(@RequestParam("id") Long id, Model model);
+    String addNewProduct(AddProductForm addProductForm) throws IOException;
 
-    public String addNewProduct(AddProductForm addProductForm) throws IOException;
+    List<ProductDTO> getAllProductDTO();
 
-    public List<ProductDTO> getAllProductDTO();
+    ProductDTO getProductDto(Long id);
 
-    public ProductDTO getProductDto(Long id);
+    String deleteProduct(Long id) throws Exception;
 
-    public String deleteProduct(Long id) throws IOException;
+    ProductForm getProductFormById(Long id);
 
-    public ProductForm getProductFormById(Long id);
-
-    public void saveProduct(ProductForm productForm) throws IOException;
+    void saveProduct(ProductForm productForm) throws IOException;
 
 
+    Page<Product> findProductFeatured(int productFeaturedNum);
 }

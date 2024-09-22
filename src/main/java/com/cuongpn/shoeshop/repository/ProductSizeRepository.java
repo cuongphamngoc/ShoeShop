@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface ProductSizeRepository extends JpaRepository<ProductSize, ProductSizeId> {
-    public Optional<ProductSize> findByIdOrderBySizeValue(ProductSizeId id);
+    Optional<ProductSize> findByIdOrderBySizeValue(ProductSizeId id);
 }

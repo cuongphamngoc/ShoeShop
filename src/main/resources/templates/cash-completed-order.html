@@ -13,7 +13,7 @@
         </div>
         <div class="card-body">
             <p class="card-text">Cảm ơn bạn đã đặt hàng. Đơn hàng của bạn đã được tạo với mã đơn hàng: <strong th:text="${order.id}"></strong>.</p>
-            <p class ="card-text">Giá trị đơn hàng: <strong style="color:red;" th:text="${#numbers.formatDecimal(order.orderTotal, 0, 'COMMA', 0, 'POINT')} + ' đ'"> </strong></p>
+            <p class ="card-text">Giá trị đơn hàng: <strong style="color:red;" th:text="${#numbers.formatDecimal(order.total, 0, 'COMMA', 0, 'POINT')} + ' đ'"> </strong></p>
             <p class="card-text">Vui lòng thanh toán khi nhận hàng.</p>
             <p class="card-text">Thời gian giao hàng dự kiến là 7 ngày.</p>
             <a href="/" class="btn btn-primary">Quay lại trang chủ</a>

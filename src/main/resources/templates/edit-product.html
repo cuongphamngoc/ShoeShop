@@ -48,7 +48,7 @@
     <h1>Edit Product</h1>
 
 
-    <form enctype="multipart/form-data" method="post" th:action="@{/product/save}" th:object="${productForm}" id ="productForm">
+    <form enctype="multipart/form-data" method="post" th:action="@{/admin/product/save}" th:object="${productForm}" id ="productForm">
         <input th:field="*{id}" type="hidden"/>
         <div class="mb-3">
             <label class="form-label" for="title">Title</label>

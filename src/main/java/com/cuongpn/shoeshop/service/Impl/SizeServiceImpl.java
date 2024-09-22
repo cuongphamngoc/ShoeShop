@@ -3,16 +3,15 @@ package com.cuongpn.shoeshop.service.Impl;
 import com.cuongpn.shoeshop.entity.Size;
 import com.cuongpn.shoeshop.repository.SizeRepository;
 import com.cuongpn.shoeshop.service.SizeService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class SizeServiceImpl implements SizeService {
     private final SizeRepository sizeRepository;
     @Override

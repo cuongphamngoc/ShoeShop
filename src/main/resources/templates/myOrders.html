@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{manageUser}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile</title>
+</head>
+<body>
+
+<div layout:fragment="content">
+    <h3>Manage Orders</h3>
+    <table class="table">
+        <thead class="thead-dark">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Id</th>
+            <th scope="col">Order Date</th>
+            <th scope="col">Shipping Date</th>
+            <th scope="col">Payment Method</th>
+            <th scope="col">Total Price</th>
+            <th scope="col">Status</th>
+            <th scope="col">Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="order, iterStat : ${orders}">
+            <td><span th:text="${iterStat.count }"></span></td>
+            <td><span th:text="${order.id}"></span></td>
+            <td><span th:text="${order.orderDate}"></span></td>
+            <td><span th:text="${order.shippingDate}"></span></td>
+            <td><span th:text="${order.paymentMethod}"></span></td>
+            <td><span  th:text="${#numbers.formatDecimal(order.orderTotal, 0, 'COMMA', 0, 'POINT')}"></span> đ</td>
+            <td><span th:text="${order.orderStatus}"></span></td>
+            <td>
+                <a class="btn btn-primary" th:href="@{/user/my-orders/{id}(id=${order.id})}">View Details</a>
+            </td>
+
+        </tr>
+        </tbody>
+    </table>
+
+
+</div>
+
+
+
+
+</body>
+</html>

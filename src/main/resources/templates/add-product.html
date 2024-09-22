@@ -22,7 +22,7 @@
 <div th:replace="partials/header :: body-scripts"></div>
 <div class="container">
     <h1>Add Product</h1>
-    <form th:action="@{/product/add}" th:object="${addProductForm}" method="post" enctype="multipart/form-data">
+    <form th:action="@{/admin/product/add}" th:object="${addProductForm}" method="post" enctype="multipart/form-data">
         <div class="mb-3">
             <label for="title" class="form-label">Title</label>
             <input type="text" class="form-control" id="title" th:field="*{title}" required>

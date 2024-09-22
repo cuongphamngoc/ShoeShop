@@ -1,0 +1,8 @@
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+
+<a th:fragment="paging(pageNum, label, tooltip)" class="page-link"
+    th:title="${tooltip}" rel="tooltip"
+    th:onclick="'setPageAndSubmit(' + ${pageNum} + ')'">
+    [[${label}]]
+</a>
+</html>

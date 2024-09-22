@@ -5,10 +5,12 @@ import com.cuongpn.shoeshop.domain.SortFilter;
 import com.cuongpn.shoeshop.dto.*;
 import com.cuongpn.shoeshop.entity.*;
 import com.cuongpn.shoeshop.enums.ImageType;
+import com.cuongpn.shoeshop.mapper.ProductMapper;
 import com.cuongpn.shoeshop.repository.*;
 import com.cuongpn.shoeshop.service.*;
-import com.cuongpn.shoeshop.util.CurrencyUtil;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,16 +18,18 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Service
+@Slf4j
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final CategoryService categoryService;
@@ -34,188 +38,106 @@ public class ProductServiceImpl implements ProductService {
     private final ProductSizeService productSizeService;
     private final FileUpLoadService fileService;
     private final ProductImageService productImageService;
-
-    @Override
-    public List<Product> getAllProduct() {
-        return productRepository.findAll();
-    }
+    private final ProductMapper productMapper;
+    private static final String UPLOAD_FOLDER = "product";
 
     @Override
     public Page<Product> getAllProduct(ProductFilterForm productFilterForm) {
+        int pageNo = productFilterForm.getPageNo();
+        if(pageNo>= 1) pageNo = pageNo-1;
         Sort sort = SortFilter.getSort(productFilterForm.getSortType());
-        Pageable pageable = PageRequest.of(productFilterForm.getPageNo(), productFilterForm.getPageSize(), sort);
-        Specification<Product> specification = ProductSpecification.buildFilter(productFilterForm.getSize(),productFilterForm.getCategory(),productFilterForm.getBrand(),productFilterForm.getSearchKey(),productFilterForm.getPriceLow(),productFilterForm.getPriceHigh());
-        return productRepository.findAll(specification,pageable);
-
-
+        Pageable pageable = PageRequest.of(pageNo, productFilterForm.getPageSize(), sort);
+        Specification<Product> specification = ProductSpecification.buildFilter(productFilterForm.getSize(), productFilterForm.getCategory(), productFilterForm.getBrand(), productFilterForm.getSearchKey(), productFilterForm.getPriceLow(), productFilterForm.getPriceHigh());
+        return productRepository.findAll(specification, pageable);
     }
 
 
-
     @Override
-    public Product getProductDetail(Long id, Model model) {
-        return productRepository.findById(id).orElseThrow();
+    @Cacheable(value="product", key="#id")
+    public ProductDTO getProductDetail(Long id) {
+        return getProductDto(id);
     }
 
     @Override
     @Transactional
-    public String addNewProduct(AddProductForm addProductForm) throws IOException {
-        long startTime = System.nanoTime();
-
-        Brand brand = brandService.findById(addProductForm.getBrand());
-        Set<Category> categorySet = categoryService.findAllById(addProductForm.getCategories());
-        Product product = Product.builder()
-                .title(addProductForm.getTitle())
-                .price(addProductForm.getPrice())
-                .brand(brand)
-                .categories(categorySet)
-                .build();
-        Product current = productRepository.save(product);
-        if(current.getProductSizes()== null){
-            current.setProductSizes(new HashSet<>());
-        }
-        if(current.getProductImages() == null){
-            current.setProductImages(new HashSet<>());
-        }
-        for(Map.Entry<Long, Integer> entry : addProductForm.getSizes().entrySet()){
-            Size  size = sizeService.findById(entry.getKey());
-            ProductSize productSize = productSizeService.addProductSize(current,size,entry.getValue());
-            size.getProductSizes().add(productSize);
-            current.getProductSizes().add(productSize);
-            sizeService.saveSize(size);
-        }
-        Set<ProductImage> productImages = new HashSet<>();
-        String thumbnail = "";
-        String folder = "product";
-
-        MultipartFile [] galleryImages  = addProductForm.getGalleryImages();
-        List<Map<String,String>> imageResponse = fileService.uploadMultipleFiles(galleryImages,folder);
-        for(Map<String,String> image : imageResponse){
-            if(thumbnail.isEmpty()){
-                thumbnail= image.get("secure_url");
-
-            }
-            ProductImage productImage = productImageService.addNewProductImage(image.get("secure_url"),image.get("public_id"),current,ImageType.GALLERY);
-            productImages.add(productImage);
-        }
-        /*for(MultipartFile images : addProductForm.getGalleryImages()){
-            Map map  = fileService.uploadImage(images,folder);
-            if(thumbnail.isEmpty()){
-                thumbnail= map.get("secure_url").toString();
-
-            }
-            ProductImage productImage = productImageService.addNewProductImage(map.get("secure_url").toString(),map.get("public_id").toString(),current,ImageType.GALLERY);
-            productImages.add(productImage);
-        }*/
-        MultipartFile [] detailImages  = addProductForm.getDetailImages();
-        List<Map<String,String>> imageResponse2 = fileService.uploadMultipleFiles(detailImages,folder);
-        for(Map<String,String> image : imageResponse2){
-            ProductImage productImage = productImageService.addNewProductImage(image.get("secure_url"),image.get("public_id"),current,ImageType.DETAIL);
-            productImages.add(productImage);
-        }
-//        for(MultipartFile images : addProductForm.getDetailImages()){
-//            Map map  = fileService.uploadImage(images,folder);
-//            ProductImage productImage = productImageService.addNewProductImage(map.get("secure_url").toString(),map.get("public_id").toString(),current,ImageType.DETAIL);
-//            productImages.add(productImage);
-//        }
-        current.setThumbnailImageUrl(thumbnail);
-        current.getProductImages().addAll(productImages);
+    public String addNewProduct(AddProductForm addProductForm)  {
+        Product newProduct = createNewProductFromForm(addProductForm);
+        Product current = productRepository.save(newProduct);
+        addProductSizes(current,addProductForm.getSizes());
+        addProductImages(current,addProductForm);
         productRepository.save(current);
-        long endTime = System.nanoTime();
-
-        // Tính toán thời gian thực thi
-        long duration = (endTime - startTime); // Đơn vị: nano giây
-
-        System.out.println("Thời gian thực thi: " + duration + " nano giây");
         return "Success";
 
 
     }
+    private Product createNewProductFromForm(AddProductForm productForm){
+        Brand brand = brandService.findById(productForm.getBrand());
+        Set<Category> categories = categoryService.findAllById(productForm.getCategories());
+        return Product.builder()
+                .title(productForm.getTitle())
+                .brand(brand)
+                .categories(categories)
+                .price(productForm.getPrice())
+                .productImages(new HashSet<>())
+                .productSizes(new HashSet<>())
+                .thumbnailImageUrl("")
+                .build();
+    }
+    private void addProductSizes(Product product, Map<Long,Integer> sizes){
+        for (Map.Entry<Long, Integer> entry : sizes.entrySet()) {
+            Size size = sizeService.findById(entry.getKey());
+            ProductSize productSize = productSizeService.addProductSize(product, size, entry.getValue());
+            size.getProductSizes().add(productSize);
+            product.getProductSizes().add(productSize);
+            sizeService.saveSize(size);
+        }
+    }
+    private void addProductImages(Product product, AddProductForm productForm)  {
+        Set<ProductImage> productImages = product.getProductImages();
+        String thumbnailImageUrl = product.getThumbnailImageUrl();
+        MultipartFile[] galleryImages = productForm.getGalleryImages();
+        MultipartFile[] detailImages = productForm.getDetailImages();
+        int galleryImagesLength = galleryImages.length;
+        MultipartFile[] allImages = Stream.concat(Arrays.stream(galleryImages), Arrays.stream(detailImages)).toArray(MultipartFile[]::new);
+        List<Map<String, String>> imageResponse = uploadMultipleFiles(allImages, UPLOAD_FOLDER);
+        int count = 0;
+        for (Map<String, String> image : imageResponse) {
+            if (thumbnailImageUrl.isEmpty()) {
+                thumbnailImageUrl = image.get("secure_url");
+
+            }
+            boolean isGalleryImage =  count < galleryImagesLength;
+            ImageType imageType = isGalleryImage ? ImageType.GALLERY : ImageType.DETAIL;
+
+            ProductImage productImage = productImageService.addNewProductImage(image.get("secure_url"), image.get("public_id"), product, imageType);
+            productImages.add(productImage);
+            count++;
+        }
+        product.setThumbnailImageUrl(thumbnailImageUrl);
+
+    }
+
 
     @Override
+    @Cacheable(value="product")
     public List<ProductDTO> getAllProductDTO() {
         List<Product> list = productRepository.findAll();
-
-        Map<Long,List<ImageDTO>> galleryMap= new HashMap<>();
-        Map<Long,List<ImageDTO>> detailMap= new HashMap<>();
-        list.forEach(product->{
-            galleryMap.put(product.getId(),new ArrayList<>());
-            detailMap.put(product.getId(), new ArrayList<>());
-        });
-
-
-        list.forEach(product ->
-                product.getProductImages().stream()
-                        .filter(image -> image.getImageType() == ImageType.GALLERY)
-                        .forEach(image -> galleryMap.get(product.getId()).add(new ImageDTO(image.getId(), image.getImageUrl())))
-        );
-        list.forEach(product ->
-                product.getProductImages().stream()
-                        .filter(image -> image.getImageType() != ImageType.GALLERY)
-                        .forEach(image -> detailMap.get(product.getId()).add(new ImageDTO(image.getId(), image.getImageUrl())))
-        );
-
-        return (List<ProductDTO>) list.stream().map(product->{
-                    List<ProductSizeDTO> productSizeDTOList = new ArrayList<>(product.getProductSizes().stream().map(proSize ->
-                            new ProductSizeDTO(proSize.getId().getProductId(), proSize.getId().getSizeId(), proSize.getSize().getValue(), proSize.getStock())).toList());
-                    productSizeDTOList.sort((a,b)->Long.compare(a.getValue(),b.getValue()));
-                    return ProductDTO.builder().id(product.getId())
-                            .brand(product.getBrand())
-                            .title(product.getTitle())
-                            .price(CurrencyUtil.formatCurrency(product.getPrice()))
-                            .categories(product.getCategories().stream().toList())
-                            .sizes(productSizeDTOList)
-                            .galleryImages(galleryMap.get(product.getId()))
-                            .detailsImages(detailMap.get(product.getId()))
-                            .build();
-                }
-
-
-        ).toList();
+        return productMapper.toProductDTOs(list);
     }
 
     @Override
+    @Cacheable(value="product", key="#id")
     public ProductDTO getProductDto(Long id) {
         Product product = productRepository.findById(id).orElseThrow();
-        List<ImageDTO> galleryImages = new ArrayList<>();
-        List<ImageDTO> detailImages = new ArrayList<>();
-        product.getProductImages().forEach(
-                image->
-                {
-                    if(image.getImageType() == ImageType.GALLERY){
-                        galleryImages.add(new ImageDTO(image.getId(),image.getImageUrl()));
-                    }
-                    else{
-                        detailImages.add(new ImageDTO(image.getId(),image.getImageUrl()));
-                    }
-                }
-        );
-        galleryImages.sort((a, b) -> Long.compare(a.getId(), b.getId()));
-        detailImages.sort((a, b) -> Long.compare(a.getId(), b.getId()));
-        List<ProductSizeDTO> sizeDTOS = new ArrayList<>(product.getProductSizes().stream().map(size ->
-                new ProductSizeDTO(size.getId().getProductId(), size.getId().getSizeId(), size.getSize().getValue(), size.getStock())
-        ).toList());
-        sizeDTOS.sort((a,b)->Long.compare(a.getValue(),b.getValue()));
-        return ProductDTO.builder()
-                .id(product.getId())
-                .price(CurrencyUtil.formatCurrency(product.getPrice()))
-                .title(product.getTitle())
-                .brand(product.getBrand())
-                .sizes(sizeDTOS)
-                .categories(product.getCategories().stream().toList())
-                .galleryImages(galleryImages)
-                .detailsImages(detailImages)
-                .build();
-
+        System.out.println(productMapper.toProductDTO(product));
+        return productMapper.toProductDTO(product);
     }
 
     @Override
-    public String deleteProduct(Long id) throws IOException {
+    public String deleteProduct(Long id) throws Exception {
         Product product = productRepository.findById(id).orElseThrow();
-        Set<ProductImage> productImages = product.getProductImages();
-        for(ProductImage productImage: productImages){
-            Map res = fileService.destroyImage(productImage.getPublic_id());
-        }
+        List<String> publicIds = product.getProductImages().stream().map(ProductImage::getPublicId).toList();
+        fileService.destroyImages(publicIds);
         productRepository.deleteById(id);
         return "success";
     }
@@ -227,21 +149,55 @@ public class ProductServiceImpl implements ProductService {
                 .id(product.getId())
                 .brand(product.getBrand().getId())
                 .price(product.getPrice())
-                .categories(product.getCategories().stream().map(Category::getId).collect(Collectors.toSet()))
-                .sizes(product.getProductSizes().stream().collect(Collectors.toMap(productsize-> productsize.getSize().getValue(),ProductSize::getStock)))
+                .categories(mapCategories(product))
+                .sizes(mapSizes(product))
                 .title(product.getTitle())
-                .detailImagesDTO(product.getProductImages().stream().filter(productImage -> productImage.getImageType()==ImageType.DETAIL).map(productImage -> new ImageDTO(productImage.getId(),productImage.getImageUrl())).toList())
-                .galleryImagesDTO(product.getProductImages().stream().filter(productImage -> productImage.getImageType()==ImageType.GALLERY).map(productImage -> new ImageDTO(productImage.getId(),productImage.getImageUrl())).toList())
+                .detailImagesDTO(mapImages(product, ImageType.DETAIL))
+                .galleryImagesDTO(mapImages(product, ImageType.GALLERY))
                 .build();
     }
 
+    private Set<Long> mapCategories(Product product) {
+        return product.getCategories().stream()
+                .map(Category::getId)
+                .collect(Collectors.toSet());
+    }
+
+    private Map<Long, Integer> mapSizes(Product product) {
+        return product.getProductSizes().stream()
+                .collect(Collectors.toMap(
+                        productSize -> productSize.getSize().getValue(),
+                        ProductSize::getStock
+                ));
+    }
+
+    private List<ImageDTO> mapImages(Product product, ImageType imageType) {
+        return product.getProductImages().stream()
+                .filter(productImage -> productImage.getImageType() == imageType)
+                .map(productImage -> new ImageDTO(productImage.getId(), productImage.getImageUrl()))
+                .collect(Collectors.toList());
+    }
+
     @Override
-    public void saveProduct(ProductForm productForm) throws IOException {
+    @Transactional
+    public void saveProduct(ProductForm productForm)  {
         Product product = productRepository.findById(productForm.getId()).orElseThrow();
+        updateProductSizes(product, productForm);
+        updateProductDetails(product, productForm);
+        updateProductImages(product, productForm);
+        productRepository.save(product);
+    }
+
+    @Override
+    public Page<Product> findProductFeatured(int productFeaturedNum) {
+        Pageable pageable = PageRequest.of(0,productFeaturedNum);
+        return productRepository.findProductFeatured(pageable);
+    }
+
+    private void updateProductSizes(Product product, ProductForm productForm) {
         Set<ProductSize> productSizes = product.getProductSizes();
-        productSizes.removeIf(productSize ->
-                !productForm.getSizes().containsKey(productSize.getSize().getValue())
-        );
+        productSizes.removeIf(productSize -> !productForm.getSizes().containsKey(productSize.getSize().getValue()));
+
         productForm.getSizes().forEach((value, stock) -> {
             Size size = sizeService.findByValue(value);
             Optional<ProductSize> optionalProductSize = productSizeService.findById(product, size);
@@ -254,66 +210,108 @@ public class ProductServiceImpl implements ProductService {
                 productSizes.add(newProductSize);
             }
         });
+    }
 
+    private void updateProductDetails(Product product, ProductForm productForm) {
         product.setTitle(productForm.getTitle());
         Brand brand = brandService.findById(productForm.getBrand());
         product.setBrand(brand);
         product.setPrice(productForm.getPrice());
         product.setCategories(categoryService.findAllById(productForm.getCategories()));
+    }
+
+    private void updateProductImages(Product product, ProductForm productForm)  {
         Set<ProductImage> productImages = product.getProductImages();
-        System.out.println(productForm.getGalleryImagesToDelete());
-        System.out.println(productForm.getDetailImagesToDelete());
-        for(String url: productForm.getGalleryImagesToDelete().split(",")){
-            System.out.println("Url search..." + url);
-            if(url.isEmpty()) continue;
-            Optional<ProductImage> optionalProductImage = productImageService.findById(Long.parseLong(url));
-            System.out.println(optionalProductImage);
-            if (optionalProductImage.isPresent()) {
-                System.out.println("Removing gallery image: " + url);
-                ProductImage productImage = optionalProductImage.get();
-                productImages.remove(productImage);
-                productImageService.delete(productImage);
-            }
-        }
-        System.out.println(productForm.getDetailImagesToDelete());
-        for(String url: productForm.getDetailImagesToDelete().split(",")){
-            System.out.println("Url search..." + url);
-            if(url.isEmpty()) continue;
-            Optional<ProductImage> optionalProductImage = productImageService.findById(Long.parseLong(url));
-            System.out.println(optionalProductImage);
-            if (optionalProductImage.isPresent()) {
-                ProductImage productImage = optionalProductImage.get();
-                System.out.println("Removing gallery image: " + url);
-                productImages.remove(productImage);
-                productImageService.delete(productImage);
-            }
-        }
-        Set<ProductImage> galleryProductImageSet = new HashSet<>(productImageService.findByProductAndType(product, ImageType.GALLERY));
-        Set<ProductImage> detailProductImageSet = new HashSet<>(productImageService.findByProductAndType(product, ImageType.DETAIL));
-        String folder = "product";
-        for(MultipartFile multipartFile:productForm.getGalleryImages()){
-            if(!multipartFile.isEmpty()){
-                Map response  = fileService.uploadImage(multipartFile,folder);
+        deleteImages(productImages, productForm.getGalleryImagesToDelete());
+        deleteImages(productImages, productForm.getDetailImagesToDelete());
 
-                ProductImage productImage = productImageService.addNewProductImage(response.get("secure_url").toString(),response.get("public_id").toString(),product,ImageType.GALLERY);
-                galleryProductImageSet.add(productImage);
-            }
+        uploadImages(product, productForm.getGalleryImages(), ImageType.GALLERY);
+        uploadImages(product, productForm.getDetailImages(), ImageType.DETAIL);
+    }
+
+    private void deleteImages(Set<ProductImage> productImages, String imagesToDelete) {
+        List<String> publicIds = Arrays.stream(imagesToDelete.split(","))
+                .filter(id -> !id.isEmpty())
+                .map(Long::parseLong)
+                .map(productImageService::findById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .peek(productImages::remove)
+                .map(ProductImage::getPublicId)
+                .collect(Collectors.toList());
+
+        // Delete from Cloudinary
+        deleteImagesFromCloudinary(publicIds);
+
+        // Delete from the database
+        publicIds.forEach(productImageService::deleteByPublicId);
+    }
+
+    private void deleteImagesFromCloudinary(List<String> publicIds) {
+        try {
+            if(publicIds.isEmpty()) return;
+            fileService.destroyImages(publicIds);
+
+        } catch (Exception e) {
+            // Handle exception appropriately
+            log.error("Error deleting images from Cloudinary", e);
+        }
+    }
 
 
-        }
-        for(MultipartFile multipartFile:productForm.getDetailImages()){
-            if(!multipartFile.isEmpty()){
-                Map response  = fileService.uploadImage(multipartFile,folder);
-                ProductImage productImage = productImageService.addNewProductImage(response.get("secure_url").toString(),response.get("public_id").toString(),product,ImageType.DETAIL);
-                detailProductImageSet.add(productImage);
-            }
-        }
-        productImages.addAll(galleryProductImageSet);
-        productImages.addAll(detailProductImageSet);
-        ProductImage thumbnail = galleryProductImageSet.stream().min(Comparator.comparingLong(ProductImage::getId)).get();
-        product.setThumbnailImageUrl(thumbnail.getImageUrl());
-        productRepository.save(product);
+    private void uploadImages(Product product, MultipartFile[] images, ImageType imageType) {
+        if(images.length == 0 ) return;
+        List<MultipartFile> nonEmptyFiles = Arrays.stream(images)
+                .filter(file -> !file.isEmpty())
+                .toList();
 
+        if (nonEmptyFiles.isEmpty()) return;
+        List<Map<String,String>> uploadResults = this.uploadMultipleFiles(nonEmptyFiles.toArray(new MultipartFile[0]),UPLOAD_FOLDER);
+        for (Map<String, String> result : uploadResults) {
+            ProductImage productImage = productImageService.addNewProductImage(
+                    result.get("secure_url"),
+                    result.get("public_id"),
+                    product,
+                    imageType
+            );
+            product.getProductImages().add(productImage);
+        }
+    }
+
+    public List<Map<String, String>> uploadMultipleFiles(MultipartFile[] multipartFiles, String folder)  {
+        List<CompletableFuture<Map<String, Object>>> futures = Arrays.stream(multipartFiles)
+                .map(file -> uploadFileAsync(file, folder))
+                .toList();
+
+        CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+
+        CompletableFuture<List<Map<String, String>>> allResults = allOf.thenApply(v ->
+                futures.stream()
+                        .map(CompletableFuture::join)
+                        .map(this::mapResult)
+                        .toList());
+
+        return allResults.join();
+    }
+
+    private CompletableFuture<Map<String, Object>> uploadFileAsync(MultipartFile file, String folder) {
+        try {
+            return fileService.uploadFile(file, folder);
+        } catch (IOException e) {
+            log.error("Error uploading file", e);
+            throw new RuntimeException("Failed to upload file", e);
+        }
+    }
+
+    private Map<String, String> mapResult(Map<String, Object> result) {
+        if (result != null) {
+            Map<String, String> map = new HashMap<>();
+            map.put("secure_url", (String) result.get("secure_url"));
+            map.put("public_id", (String) result.get("public_id"));
+            return map;
+        } else {
+            return new HashMap<>();
+        }
     }
 
 

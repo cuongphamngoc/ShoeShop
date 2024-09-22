@@ -3,8 +3,8 @@ package com.cuongpn.shoeshop.enums;
 public enum PaymentMethod {
     CASH("cashPaymentProvider"),       // Thanh toán bằng tiền mặt
     STRIPE("stripePaymentProvider"),   // Thanh toán qua Stripe
-    VNPAY("vnpayPaymentProvider"),     // Thanh toán qua VNPay
-    ZALOPAY("zalopayPaymentProvider"); // Thanh toán qua ZaloPay
+    VNPAY("vNPayPaymentProvider"),     // Thanh toán qua VNPay
+    ZALOPAY("zaloPayPaymentProvider"); // Thanh toán qua ZaloPay
 
     private final String value;
 

@@ -28,11 +28,7 @@ public class ProductForm {
     private Long brand;
     @NotEmpty(message = "Sizes must have at least one element")
     private Map<Long, Integer> sizes;
-    @NotEmpty
-    @Size(min = 1,message = "Gallery images must have at least 1 image")
     private MultipartFile[] galleryImages;
-    @NotEmpty
-    @Size(min = 1,message = "Detail images must have at least 1 image")
     private MultipartFile[] detailImages;
     private List<ImageDTO > galleryImagesDTO;
 

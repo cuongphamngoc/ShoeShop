@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Set;
 
 public interface CategoryService {
-    public List<Category> getAll();
-    public Category findById(Long id);
+    List<Category> getAll();
+    Category findById(Long id);
 
-    public Set<Category> findAllById(Set<Long> id);
+    Set<Category> findAllById(Set<Long> id);
 
 }

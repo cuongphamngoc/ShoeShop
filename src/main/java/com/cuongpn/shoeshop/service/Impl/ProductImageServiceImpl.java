@@ -5,21 +5,21 @@ import com.cuongpn.shoeshop.entity.ProductImage;
 import com.cuongpn.shoeshop.enums.ImageType;
 import com.cuongpn.shoeshop.repository.ProductImageRepository;
 import com.cuongpn.shoeshop.service.ProductImageService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
-import java.util.Set;
+
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ProductImageServiceImpl implements ProductImageService {
     private final ProductImageRepository productImageRepository;
     @Override
+    @Transactional
     public ProductImage addNewProductImage(String imageUrl, String imgPublicId, Product product, ImageType imageType) {
         ProductImage productImage = ProductImage.builder()
-                .public_id(imgPublicId)
+                .publicId(imgPublicId)
                 .imageUrl(imageUrl)
                 .imageType(imageType)
                 .product(product)
@@ -28,33 +28,18 @@ public class ProductImageServiceImpl implements ProductImageService {
     }
 
     @Override
-    public void deleteProductImageByUrl(String url) {
-        ProductImage productImage = productImageRepository.findByImageUrl(url);
-        if(productImage != null)
-        productImageRepository.delete(productImage);
-    }
-
-    @Override
-    public List<ProductImage> findByProductAndType(Product product, ImageType type) {
-        return productImageRepository.findByProductAndImageTypeOrderById(product,type);
-    }
-
-    @Override
-    public ProductImage findByImageUrl(String url) {
-        return productImageRepository.findByImageUrl(url);
-    }
-
-    @Override
     public Optional<ProductImage> findById(Long id) {
         return productImageRepository.findById(id);
     }
 
     @Override
-    public void deleteById(Long id) {
-        productImageRepository.deleteById(id);
+    @Transactional
+    public void deleteByPublicId(String publicId) {
+        productImageRepository.deleteByPublicId(publicId);
     }
 
     @Override
+    @Transactional
     public void delete(ProductImage productImage) {
         productImageRepository.delete(productImage);
     }

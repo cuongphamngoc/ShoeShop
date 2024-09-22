@@ -5,7 +5,7 @@ import com.cuongpn.shoeshop.entity.Brand;
 import java.util.List;
 
 public interface BrandService {
-    public List<Brand> getAll();
+    List<Brand> getAll();
 
-    public Brand findById(Long id);
+    Brand findById(Long id);
 }

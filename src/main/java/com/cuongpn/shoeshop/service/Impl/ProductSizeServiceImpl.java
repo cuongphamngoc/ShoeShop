@@ -6,13 +6,13 @@ import com.cuongpn.shoeshop.entity.ProductSizeId;
 import com.cuongpn.shoeshop.entity.Size;
 import com.cuongpn.shoeshop.repository.ProductSizeRepository;
 import com.cuongpn.shoeshop.service.ProductSizeService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ProductSizeServiceImpl implements ProductSizeService {
     private final ProductSizeRepository productSizeRepository;
     @Override

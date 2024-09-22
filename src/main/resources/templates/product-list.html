@@ -81,7 +81,7 @@
     });
     console.log(typeof $);
     function editProduct(productId) {
-        window.location.href = '/product/edit/' + productId;
+        window.location.href = '/admin/product/edit/' + productId;
     }
 
     function deleteProduct(productId) {
@@ -96,7 +96,7 @@
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: '/product/' + productId,
+                    url: '/admin/product/' + productId,
                     type: 'DELETE',
                     success: function(result) {
                         Swal.fire({

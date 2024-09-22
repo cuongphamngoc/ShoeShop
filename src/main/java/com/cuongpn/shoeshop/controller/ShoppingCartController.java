@@ -53,24 +53,19 @@ public class ShoppingCartController {
     public @ResponseBody ResponseEntity<?> addToCart(@RequestBody AddCartRequest addCartRequest, Principal principal){
         System.out.println(addCartRequest);
         User user = userService.findByUserName(principal.getName());
-        Cart cart = cartService.findCartByUser(user);
-        return cartItemService.addItemToCart(addCartRequest,cart);
+        return cartItemService.addItemToCart(addCartRequest,user);
     }
     @PostMapping("/shopping-cart/delete")
     public @ResponseBody ResponseEntity<?> deleteCartItem(@RequestBody List<Long> cartIds,Principal principal){
         System.out.println(cartIds);
         User user = userService.findByUserName(principal.getName());
-        Cart cart = cartService.findCartByUser(user);
-        cartService.deleteCartItem(cartIds,cart);
-        return ResponseEntity.ok("Success");
+        return cartService.deleteCartItem(cartIds,user);
+
     }
     @PostMapping("/shopping-cart/update-quantity")
     public @ResponseBody ResponseEntity<?> updateQuantity(@RequestBody UpdateQuantityRequest updateQuantityRequest, Principal principal ){
         User user = userService.findByUserName(principal.getName());
-        Cart cart = cartService.findCartByUser(user);
-        cartService.updateCartItem(cart,updateQuantityRequest);
-        return ResponseEntity.ok("Success");
-
+        return cartService.updateCartItem(user,updateQuantityRequest);
 
     }
 }

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{manageUser}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile</title>
+</head>
+
+<body>
+
+<div layout:fragment="content">
+    <h3>Order ID : <span th:text="${order.id}"></span> </h3>
+    <table class="table">
+        <thead class="thead-dark">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Id</th>
+            <th scope="col">Image</th>
+            <th scope="col">Product Name</th>
+            <th scope="col">Size</th>
+            <th scope="col">Quantity</th>
+            <th scope="col">Price</th>
+            <th scope="col">Total Price</th>
+
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="orderItem, iterStat : ${orderItems}">
+            <td><span th:text="${iterStat.count }"></span></td>
+            <td><span th:text="${orderItem.id}"></span> </td>
+            <td>
+                <div class="container-fluid">
+                    <img th:src="@{${orderItem.productImage}}" alt="Product Image" class="product-image"
+                    style="width:100px; object-fit:cover;">
+                </div></td>
+            <td><span th:text="${orderItem.productName}"></span></td>
+            <td><span th:text="${orderItem.size}"></span></td>
+            <td><span th:text="${orderItem.qty}"></span></td>
+            <td><span  th:text="${#numbers.formatDecimal(orderItem.price, 0, 'COMMA', 0, 'POINT')}"></span> đ</td>
+
+            <td><span  th:text="${#numbers.formatDecimal(orderItem.totalPrice, 0, 'COMMA', 0, 'POINT')}"></span> đ</td>
+
+
+
+        </tr>
+        </tbody>
+    </table>
+    <a class ="btn btn-primary mt-3" th:href="@{/user/my-orders}">Back</a>
+
+
+</div>
+<div th:replace="partials/header :: body-scripts"> </div>
+
+
+
+</body>
+</html>

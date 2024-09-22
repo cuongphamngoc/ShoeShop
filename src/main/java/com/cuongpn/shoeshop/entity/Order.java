@@ -3,9 +3,7 @@ package com.cuongpn.shoeshop.entity;
 import com.cuongpn.shoeshop.enums.OrderStatus;
 import com.cuongpn.shoeshop.enums.PaymentMethod;
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -16,16 +14,18 @@ import java.util.List;
 @Setter
 @Table(name="`order`")
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private LocalDateTime orderDate;
-    private LocalDateTime  shippingDate;
     private PaymentMethod paymentMethod;
-    private OrderStatus orderStatus;
-    private BigDecimal orderTotal;
-
+    private OrderStatus status;
+    private BigDecimal total;
+    @OneToOne(cascade = CascadeType.ALL,mappedBy = "order")
+    private Shipping shipping;
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
@@ -34,7 +34,7 @@ public class Order {
 
     private void setOrderTotal(){
         for(OrderItem orderItem: orderItems){
-            orderTotal = orderTotal.add(orderItem.getSubTotal());
+            total = total.add(orderItem.getSubTotal());
         }
     }
 }

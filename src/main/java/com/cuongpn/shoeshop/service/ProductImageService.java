@@ -9,17 +9,11 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface ProductImageService {
-    public ProductImage addNewProductImage(String imgUrl, String imgPublicId, Product product, ImageType imageType);
+    ProductImage addNewProductImage(String imgUrl, String imgPublicId, Product product, ImageType imageType);
 
-    public void deleteProductImageByUrl(String url);
+    Optional<ProductImage> findById(Long id);
 
-    public List<ProductImage> findByProductAndType(Product product, ImageType type);
+    void deleteByPublicId(String publicId);
 
-    public ProductImage findByImageUrl(String url);
-
-    public Optional<ProductImage> findById(Long id);
-
-    public void deleteById(Long id);
-
-    public void delete(ProductImage productImage);
+    void delete(ProductImage productImage);
 }

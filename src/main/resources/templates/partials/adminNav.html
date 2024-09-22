@@ -7,7 +7,7 @@
 <body>
 <div th:fragment="navbarAdmin">
     <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4 fixed-top">
-        <a class="navbar-brand" th:href="@{/product/list}">ADMIN PORTAL</a>
+        <a class="navbar-brand" th:href="@{/admin/product/list}">ADMIN PORTAL</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-target="#navbarCollapse" aria-controls="navbarCollapse"
                 aria-expanded="false" aria-label="Toggle navigation">
@@ -20,8 +20,8 @@
                        role="button" data-bs-toggle="dropdown" aria-haspopup="true"
                        aria-expanded="false"> PRODUCTS </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" th:href="@{/product/add}">Add new product</a>
-                        <a class="dropdown-item" th:href="@{/product/list}">View product list</a>
+                        <a class="dropdown-item" th:href="@{/admin/product/add}">Add new product</a>
+                        <a class="dropdown-item" th:href="@{/admin/product/list}">View product list</a>
                     </div>
                 </li>
                 <li  class="nav-item">

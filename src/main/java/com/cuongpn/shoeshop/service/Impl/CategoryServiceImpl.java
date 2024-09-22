@@ -3,7 +3,7 @@ package com.cuongpn.shoeshop.service.Impl;
 import com.cuongpn.shoeshop.entity.Category;
 import com.cuongpn.shoeshop.repository.CategoryRepository;
 import com.cuongpn.shoeshop.service.CategoryService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     @Override

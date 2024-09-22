@@ -16,6 +16,7 @@ import com.cuongpn.shoeshop.service.SizeService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -40,24 +41,27 @@ public class ProductController {
 
         Page<Product>productPage = productService.getAllProduct(filterForm);
         System.out.println(productPage.getTotalElements());
+        filterForm.setPageNo(productPage.getNumber() +1);
         model.addAttribute("productList",productPage.getContent());
-        model.addAttribute("totalPage",productPage.getTotalPages());
-        model.addAttribute("currentPage", productPage.getNumber());
+        model.addAttribute("totalPages",productPage.getTotalPages());
+        model.addAttribute("currentPage", productPage.getNumber()+1);
         model.addAttribute("allSizes",sizeService.getAll().stream().map(Size::getValue).toList());
         model.addAttribute("allBrands",brandService.getAll().stream().map(Brand::getName).toList());
         model.addAttribute("allCategories",categoryService.getAll().stream().map(Category::getName).toList());
         model.addAttribute("filterForm",filterForm);
-        model.addAttribute("itemsPerPage", 10);
+        model.addAttribute("itemsPerPage", filterForm.getPageSize());
         return "product";
     }
 
     @GetMapping("/product/{id}")
     public String getProductDetails(@PathVariable("id") Long id, Model model){
-        ProductDTO product = productService.getProductDto(id);
+        ProductDTO product = productService.getProductDetail(id);
+        System.out.println(product);
         model.addAttribute("product",product);
         return "product-detail";
     }
-    @GetMapping("/product/add")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @GetMapping("/admin/product/add")
     public String showAddProductForm(Model model) {
         model.addAttribute("addProductForm", new AddProductForm());
         model.addAttribute("categories", categoryService.getAll());
@@ -66,7 +70,8 @@ public class ProductController {
 
         return "add-product";
     }
-    @PostMapping("/product/add")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PostMapping("/admin/product/add")
     public String addProduct(@Valid @ModelAttribute("addProductForm")
                                  AddProductForm addProductForm,
                              BindingResult bindingResult,
@@ -82,19 +87,22 @@ public class ProductController {
         }
         System.out.println(addProductForm);
         System.out.println(productService.addNewProduct(addProductForm));
-        return "redirect:/product/list";
+        return "redirect:/admin/product/list";
     }
-    @GetMapping("/product/list")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @GetMapping("/admin/product/list")
     public String getProductList(Model model){
         List<ProductDTO> list = productService.getAllProductDTO();
         model.addAttribute("products",list);
         return "product-list";
     }
-    @DeleteMapping("/product/{id}")
-    public @ResponseBody String deleteProduct(@PathVariable(value = "id",required = true) Long id) throws IOException {
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @DeleteMapping("/admin/product/{id}")
+    public @ResponseBody String deleteProduct(@PathVariable(value = "id",required = true) Long id) throws Exception {
         return productService.deleteProduct(id);
     }
-    @GetMapping("/product/edit/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @GetMapping("/admin/product/edit/{id}")
     public String getEditProductForm(@PathVariable(value = "id") Long id,Model model){
         ProductForm productForm = productService.getProductFormById(id);
         model.addAttribute("productForm",productForm);
@@ -103,7 +111,8 @@ public class ProductController {
         model.addAttribute("allBrands",brandService.getAll());
         return "edit-product";
     }
-    @PostMapping("/product/save")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PostMapping("/admin/product/save")
     public String saveEditProduct(@ModelAttribute("productForm") ProductForm productForm,Model model,BindingResult bindingResult) throws IOException {
         if(bindingResult.hasErrors()){
             model.addAttribute("productForm",productForm);
@@ -112,7 +121,8 @@ public class ProductController {
             model.addAttribute("allBrands",brandService.getAll());
         }
         productService.saveProduct(productForm);
-        return "redirect:/product/list";
+        return "redirect:/admin/product/list";
     }
+
 
 }
