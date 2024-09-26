@@ -45,9 +45,9 @@ public class ProductController {
         model.addAttribute("productList",productPage.getContent());
         model.addAttribute("totalPages",productPage.getTotalPages());
         model.addAttribute("currentPage", productPage.getNumber()+1);
-        model.addAttribute("allSizes",sizeService.getAll().stream().map(Size::getValue).toList());
-        model.addAttribute("allBrands",brandService.getAll().stream().map(Brand::getName).toList());
-        model.addAttribute("allCategories",categoryService.getAll().stream().map(Category::getName).toList());
+        model.addAttribute("allSizes",sizeService.getAllSizeValue());
+        model.addAttribute("allBrands",brandService.getAllBrandName());
+        model.addAttribute("allCategories",categoryService.getAllCategoryName());
         model.addAttribute("filterForm",filterForm);
         model.addAttribute("itemsPerPage", filterForm.getPageSize());
         return "product";

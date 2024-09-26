@@ -4,6 +4,7 @@ import com.cuongpn.shoeshop.dto.AddressDTO;
 import com.cuongpn.shoeshop.dto.ChangePasswordForm;
 import com.cuongpn.shoeshop.dto.OrderItemDTO;
 import com.cuongpn.shoeshop.dto.UserDTO;
+import com.cuongpn.shoeshop.entity.Address;
 import com.cuongpn.shoeshop.entity.Order;
 import com.cuongpn.shoeshop.entity.OrderItem;
 import com.cuongpn.shoeshop.entity.User;
@@ -14,6 +15,7 @@ import com.cuongpn.shoeshop.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,9 +25,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.security.Principal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/user")
@@ -90,8 +91,13 @@ public class UserController {
     @GetMapping("/my-address")
     public String myAddress(Model model, Principal principal) {
         User user = userService.findByUserName(principal.getName());
+        List<Address> addressList = user.getAddress().stream()
+                .filter(address -> !address.getIsDeleted())
+                .sorted(Comparator.comparingLong(Address::getId))
+                .collect(Collectors.toList());
+
         System.out.println(user.getAddress());
-        model.addAttribute("addresses", user.getAddress());
+        model.addAttribute("addresses",addressList);
         return "manageAddress";
     }
     @GetMapping("/add-address")
@@ -110,18 +116,54 @@ public class UserController {
 
         return "redirect:/user/my-address";
     }
+    @DeleteMapping("/delete-address/{id}")
+    public @ResponseBody ResponseEntity<?> handleDeleteAddress(@PathVariable("id") Long id, Principal principal){
+        User user = userService.findByUserName(principal.getName());
+        userService.removeAddress(user,id);
+        return ResponseEntity.ok().build();
+    }
+    @GetMapping("/edit-address/{id}")
+    public String getEditAddressForm(@PathVariable("id") Long id, Model model, Principal principal) {
+        User user = userService.findByUserName(principal.getName());
+        Set<Address> set = user.getAddress();
+        Address address  = set.stream().filter(addr -> Objects.equals(addr.getId(), id)).findFirst().orElseThrow();
+        System.out.println(address);
+        AddressDTO addressDTO = AddressDTO.builder()
+                .id(address.getId())
+                .name(address.getName())
+                .city(address.getCity())
+                .streetAddress(address.getStreetAddress())
+                .zipCode(address.getZipCode())
+                .district(address.getDistrict())
+                .build();
+        model.addAttribute("address",addressDTO);
+
+        return "add-address";
+    }
+    @PostMapping("/edit-address")
+    public String postEditAddressForm(@Valid @ModelAttribute("address") AddressDTO address, BindingResult bindingResult, Principal principal) {
+        if (bindingResult.hasErrors()) {
+            return "add-address";
+        }
+        System.out.println(address);
+        userService.saveAddress(principal,address);
+
+        return "redirect:/user/my-address";
+    }
 
 
     @GetMapping("/change-password")
-    public String getChangePassword(Model model){
+    public String getChangePassword(Model model,Principal principal){
 
         ChangePasswordForm changePasswordForm = new ChangePasswordForm();
+        changePasswordForm.setUserName(principal.getName());
         model.addAttribute("password",changePasswordForm);
         return "changePassword";
     }
     @PostMapping("/change-password")
     public String updatePassword(Model model, @Valid @ModelAttribute("password")  ChangePasswordForm changePasswordForm,BindingResult bindingResult, Principal principal){
         if (bindingResult.hasErrors()) {
+
             model.addAttribute("password",changePasswordForm);
             return "changePassword";
         }

@@ -1,0 +1,74 @@
+<html lang="en" xmlns:th="http://www.w3.org./1999/xhtml" >
+
+<head th:replace="partials/header :: common-header">
+</head>
+
+<body class="d-flex flex-column">
+<div th:replace="partials/header :: navbar"></div>
+
+<div class="container mt-5">
+    <h1>Kết quả thanh toán</h1>
+    <th:block th:switch="${order.status.name()}">
+
+    <div class="card" th:case="'PAID'">
+
+        <div class="card-header">
+            <p>Thanh toán thành công! Cảm ơn bạn đã mua hàng.</p>
+        </div>
+        <div class="card-body">
+            <p class="card-text">Mã đơn hàng: <span th:text="${order.id}"></span></p>
+            <p class ="card-text">Giá trị đơn hàng: <strong style="color:red;" th:text="${#numbers.formatDecimal(order.total, 0, 'COMMA', 0, 'POINT')} + ' đ'"> </strong></p>
+            <p class="card-text">Thời gian giao hàng dự kiến là 7 ngày.</p>
+            <a href="/" class="btn btn-primary">Quay lại trang chủ</a>
+        </div>
+    </div>
+    <div class="card" th:case="'PENDING'">
+
+        <div class="card-header">
+            <p>Thanh toán đang chờ xử lý. Vui lòng kiểm tra lại sau.</p>
+        </div>
+        <div class="card-body">
+            <p class="card-text">Mã đơn hàng: <span th:text="${order.id}"></span></p>
+            <p class ="card-text">Giá trị đơn hàng: <strong style="color:red;" th:text="${#numbers.formatDecimal(order.total, 0, 'COMMA', 0, 'POINT')} + ' đ'"> </strong></p>
+            <a href="/" class="btn btn-primary">Quay lại trang chủ</a>
+        </div>
+    </div>
+    <div class="card" th:case="'CANCELLED'">
+
+        <div class="card-header">
+            <p>Thanh toán đã bị hủy. Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi.</p>
+        </div>
+        <div class="card-body">
+            <p class="card-text">Mã đơn hàng: <span th:text="${order.id}"></span></p>
+            <p class ="card-text">Giá trị đơn hàng: <strong style="color:red;" th:text="${#numbers.formatDecimal(order.total, 0, 'COMMA', 0, 'POINT')} + ' đ'"> </strong></p>
+            <a href="/" class="btn btn-primary">Quay lại trang chủ</a>
+        </div>
+    </div>
+    <div class="card" th:case="'FAILED'">
+
+        <div class="card-header">
+            <p>Thanh toán thất bại. Vui lòng thử lại.</p>
+        </div>
+        <div class="card-body">
+            <p class="card-text">Mã đơn hàng: <span th:text="${order.id}"></span></p>
+            <p class ="card-text">Giá trị đơn hàng: <strong style="color:red;" th:text="${#numbers.formatDecimal(order.total, 0, 'COMMA', 0, 'POINT')} + ' đ'"> </strong></p>
+            <a href="/" class="btn btn-primary">Quay lại trang chủ</a>
+        </div>
+    </div>
+    <div class="card" th:case="'CASH_ON_DELIVERY'">
+        <div class="card-header">
+            <p>Đơn hàng của bạn sẽ được thanh toán khi giao hàng (COD). Cảm ơn bạn đã mua hàng.</p>
+        </div>
+        <div class="card-body">
+            <p class="card-text">Mã đơn hàng: <span th:text="${order.id}"></span></p>
+            <p class ="card-text">Giá trị đơn hàng: <strong style="color:red;" th:text="${#numbers.formatDecimal(order.total, 0, 'COMMA', 0, 'POINT')} + ' đ'"> </strong></p>
+            <p class="card-text">Thời gian giao hàng dự kiến là 7 ngày.</p>
+            <a href="/" class="btn btn-primary">Quay lại trang chủ</a>
+        </div>
+
+    </div>
+    </th:block>
+
+</div>
+</body>
+</html>

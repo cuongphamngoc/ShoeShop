@@ -1,6 +1,8 @@
 package com.cuongpn.shoeshop.service.Impl;
 
+import com.cuongpn.shoeshop.entity.CartItem;
 import com.cuongpn.shoeshop.entity.Order;
+import com.cuongpn.shoeshop.entity.OrderItem;
 import com.cuongpn.shoeshop.service.PaymentProvider;
 import com.cuongpn.shoeshop.util.HMACUtil;
 import com.cuongpn.shoeshop.util.ZaloPayUtil;
@@ -33,8 +35,21 @@ public class ZaloPayPaymentProvider implements PaymentProvider {
     private String domainUrl;
     private Map<String, String> createEmbedData(Order orders) {
         Map<String, String> embedData = new HashMap<>();
-        embedData.put("redirecturl", domainUrl + "/callback/success?id=" + orders.getId());
+        embedData.put("redirecturl", domainUrl + "/payment/zalopay-result?id=" + orders.getId());
         return embedData;
+    }
+    private List<Map<String,Object>> createItems(Order order){
+        List<Map<String, Object>> items = new ArrayList<>();
+        for(OrderItem orderItem : order.getOrderItems()){
+            Map<String,Object> current = new HashMap<>();
+            current.put("Id",orderItem.getId());
+            current.put("Name",orderItem.getProductSize().getProduct().getTitle());
+            current.put("Price",orderItem.getPrice());
+            current.put("Qty",orderItem.getQty());
+            current.put("Total",orderItem.getTotalPrice());
+            items.add(current);
+        }
+        return items;
     }
     private Map<String, Object> createOrderMap(Map<String, String> config, Order orders, Map<String, String> embedData, List<Map<String, Object>> items) throws JsonProcessingException {
         Map<String, Object> order = new HashMap<>();
@@ -44,7 +59,7 @@ public class ZaloPayPaymentProvider implements PaymentProvider {
         order.put("app_user", "ZaloPayDemo");
         order.put("amount", orders.getTotal().longValue());
         order.put("description", "ZaloPayDemo - Thanh toán cho đơn hàng #" + getCurrentTimeString("yyMMdd") + "_" + orders.getId());
-        order.put("callback_url", domainUrl + "/zalo-payment-return");
+        order.put("callback_url", domainUrl + "/payment/zalopay-callback");
         order.put("item", objectMapper.writeValueAsString(items));
         order.put("embed_data", new JSONObject(embedData).toString());
         return order;

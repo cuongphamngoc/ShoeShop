@@ -12,6 +12,8 @@
     <h2>Add Address</h2>
     <div th:if="${message}" th:text="${message}" style="color: red;"></div>
     <form method="post" th:action="@{/user/add-address}" th:object="${address}">
+
+        <input type="text" th:field="*{id}" hidden>
         <!-- Name -->
         <div class="form-group row mt-3" >
             <label for="addressName" class="col-sm-2 col-form-label">Name</label>

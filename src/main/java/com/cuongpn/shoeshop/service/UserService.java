@@ -15,6 +15,8 @@ public interface UserService   {
 
     public User saveUser(SignUpForm form);
 
+    public void removeAddress(User user, Long id);
+
     public void ChangePassword(ChangePasswordForm changePasswordForm, Principal principal);
 
     public void saveAddress(Principal principal, AddressDTO address);

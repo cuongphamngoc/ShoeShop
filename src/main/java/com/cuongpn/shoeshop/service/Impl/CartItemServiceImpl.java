@@ -10,22 +10,26 @@ import com.cuongpn.shoeshop.service.CartItemService;
 import com.cuongpn.shoeshop.service.CartService;
 import com.cuongpn.shoeshop.service.ProductSizeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.http.ResponseEntity;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Objects;
+
 @Service
 @RequiredArgsConstructor
 public class CartItemServiceImpl implements CartItemService {
     private final ProductSizeService productSizeService;
     private final CartService cartService;
     private final CartItemRepository cartItemRepository;
+    private final CacheManager cacheManager;
     @Override
     @Transactional
-    @CacheEvict(value = "itemCount", key = "#user.id")
-    public ResponseEntity<?> addItemToCart(AddCartRequest addCartRequest, User user) {
+    @CachePut(value = "itemCount", key = "#user.id")
+    public int addItemToCart(AddCartRequest addCartRequest, User user) {
         Cart cart = cartService.findCartByUser(user);
         ProductSize productSize = productSizeService.findById(addCartRequest.getProduct_id(),
                 addCartRequest.getSize_id())
@@ -46,9 +50,12 @@ public class CartItemServiceImpl implements CartItemService {
         }
 
         updateProductStock(productSize,addCartRequest.getQty());
-
-        return ResponseEntity.ok(cart.getCartItems().size());
+        cartService.getCartDTOByUser(user);
+        deleteCacheProduct(productSize);
+        return cart.getCartItems().size();
     }
+
+
     private CartItem createNewCartItem(Cart cart, ProductSize productSize) {
         return CartItem.builder()
                 .qty(0)
@@ -60,6 +67,9 @@ public class CartItemServiceImpl implements CartItemService {
     private void updateProductStock(ProductSize productSize, int qty) {
         productSize.setStock(productSize.getStock() - qty);
         productSizeService.saveProductSize(productSize);
+    }
+    private void deleteCacheProduct(ProductSize productSize){
+        Objects.requireNonNull(cacheManager.getCache("product")).evict(productSize.getProduct().getId());
     }
 
 

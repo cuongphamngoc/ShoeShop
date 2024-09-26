@@ -9,6 +9,8 @@ import java.util.Set;
 public interface SizeService {
     public List<Size> getAll();
 
+    public List<Long> getAllSizeValue();
+
     public Size findById(Long id);
 
     public Set<Size> findAllById(Set<Long> id);

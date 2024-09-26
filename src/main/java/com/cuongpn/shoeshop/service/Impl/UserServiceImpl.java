@@ -21,10 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.security.Principal;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -66,6 +63,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void removeAddress(User user, Long id) {
+        Set<Address> addressSet = user.getAddress();
+        Address address =  addressSet.stream()
+                .filter(address1 -> !address1.getIsDeleted())
+                .filter(addr -> Objects.equals(addr.getId(), id))
+                .findFirst().orElseThrow(()-> new RuntimeException("Address not found with id "+ id));
+        address.setIsDeleted(true);
+        userRepository.save(user);
+    }
+
+    @Override
     public void ChangePassword(ChangePasswordForm changePasswordForm, Principal principal) {
         User currentUser = this.findByUserName(principal.getName());
         currentUser.setPassword(passwordEncoder.encode(changePasswordForm.getNewPassword()));
@@ -75,15 +83,25 @@ public class UserServiceImpl implements UserService {
     @Override
     public void saveAddress(Principal principal, AddressDTO addressDTO) {
         User currentUser = this.findByUserName(principal.getName());
-        Address address = Address.builder().name(addressDTO.getName())
-                .country("Viet Nam")
-                .district(addressDTO.getDistrict())
-                .city(addressDTO.getCity())
-                .zipCode(addressDTO.getZipCode())
-                .streetAddress(addressDTO.getStreetAddress())
-                .user(currentUser)
-                .build();
-        currentUser.getAddress().add(address);
+        Set<Address> addressSet = currentUser.getAddress();
+        Address address = addressSet.stream()
+                .filter(addr-> Objects.equals(addr.getId(), addressDTO.getId()))
+                .findFirst()
+                .orElseGet(Address::new);
+
+        address.setName(addressDTO.getName());
+        address.setCountry("Viet Nam");
+        address.setDistrict(addressDTO.getDistrict());
+        address.setCity(addressDTO.getCity());
+        address.setZipCode(addressDTO.getZipCode());
+        address.setStreetAddress(addressDTO.getStreetAddress());
+        address.setUser(currentUser);
+        address.setIsDeleted(false);
+
+        // Nếu địa chỉ mới, thêm vào tập hợp
+        if (address.getId() == null) {
+            addressSet.add(address);
+        }
         userRepository.save(currentUser);
     }
 

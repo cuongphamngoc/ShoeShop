@@ -24,7 +24,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
     private final CustomUserDetailsService userService;
     private static final String[] WHITE_LIST_URL = {
-            "/signin","/login", "/signup", "/static/**","/upload","/","/image/**","/css/**"};
+            "/signin","/login", "/signup", "/static/**","/upload","/","/image/**","/css/**","/error","/payment/**"};
 
     @Bean
     public PasswordEncoder getPasswordEncoder(){
@@ -47,8 +47,8 @@ public class SecurityConfig {
                 .cors(AbstractHttpConfigurer::disable)
                 .authenticationProvider(authenticationProvider())
                 .authorizeHttpRequests(request -> request.requestMatchers(WHITE_LIST_URL).permitAll()
-                        .requestMatchers(HttpMethod.GET,"/product/**","/vnpay-payment-return","/callback/success","/callback/cancel").permitAll()
-                        .requestMatchers(HttpMethod.POST,"/zalo-payment-return").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/product/**").permitAll()
+                        .requestMatchers(HttpMethod.POST,"/payment/zalopay-callback").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .formLogin(login -> login.loginPage("/signin")

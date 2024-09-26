@@ -27,10 +27,10 @@
             <td><span th:text="${iterStat.count }"></span></td>
             <td><span th:text="${order.id}"></span></td>
             <td><span th:text="${order.orderDate}"></span></td>
-            <td><span th:text="${order.shippingDate}"></span></td>
+            <td><span th:text="${order.shipping.shippingDate}"></span></td>
             <td><span th:text="${order.paymentMethod}"></span></td>
-            <td><span  th:text="${#numbers.formatDecimal(order.orderTotal, 0, 'COMMA', 0, 'POINT')}"></span> đ</td>
-            <td><span th:text="${order.orderStatus}"></span></td>
+            <td><span  th:text="${#numbers.formatDecimal(order.total, 0, 'COMMA', 0, 'POINT')}"></span> đ</td>
+            <td><span th:text="${order.status}"></span></td>
             <td>
                 <a class="btn btn-primary" th:href="@{/user/my-orders/{id}(id=${order.id})}">View Details</a>
             </td>

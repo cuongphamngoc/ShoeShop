@@ -18,11 +18,16 @@ public class PasswordMatchValidator implements ConstraintValidator<PasswordMatch
     }
 
     @Override
-    public boolean isValid(Object passwordForm, ConstraintValidatorContext context) {
+    public boolean isValid(Object object, ConstraintValidatorContext context) {
 
-        if( passwordForm instanceof ChangePasswordForm){
-            return Objects.equals(((ChangePasswordForm) passwordForm).getNewPassword(), ((ChangePasswordForm) passwordForm).getConfirmPassword());
-        }
-        else return false;
+        if (!(object instanceof ChangePasswordForm form)) return false;
+        if(Objects.equals(form.getNewPassword(), form.getConfirmPassword())) return  true;
+        context.disableDefaultConstraintViolation();
+        context.buildConstraintViolationWithTemplate(context.getDefaultConstraintMessageTemplate())
+                .addPropertyNode("confirmPassword")
+                .addConstraintViolation();
+        return false;
+
+
     }
 }

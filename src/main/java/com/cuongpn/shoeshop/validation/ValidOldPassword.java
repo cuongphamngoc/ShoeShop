@@ -6,11 +6,11 @@ import jakarta.validation.Payload;
 import java.lang.annotation.*;
 
 @Documented
-@Constraint(validatedBy = PasswordMatchValidator.class)
+@Constraint(validatedBy = ValidOldPasswordValidator.class)
 @Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface PasswordMatch {
-    String message() default "Confirm password doesn't match with new password";
+public @interface ValidOldPassword {
+    String message() default "Old password doesn't match";
 
     Class<?>[] groups() default {};
 

@@ -25,12 +25,8 @@ public class StripePaymentProvider implements PaymentProvider {
     @Value("${stripe.api.key}")
     private String apiKey;
     private final ExchangeRateService exchangeRateService;
-
-    @Value("${stripe.success.url}")
-    private String successUrl;
-
-    @Value("${stripe.cancel.url}")
-    private String cancelUrl;
+    @Value("${app.domain.url}")
+    private String domainUrl;
 
 
     @PostConstruct
@@ -43,10 +39,14 @@ public class StripePaymentProvider implements PaymentProvider {
         BigDecimal exchangeRate = exchangeRateService.getExchangeRate("VND", "USD");
         System.out.println(exchangeRate);
 
+        String cancelUrl = "/payment/stripe-cancel?id=";
+        String successUrl = "/payment/completed?id=";
         SessionCreateParams.Builder sessionBuilder = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.PAYMENT)
-                .setSuccessUrl("http://localhost:8080/callback/success?id=" + order.getId())
-                .setCancelUrl("http://localhost:8080/callback/cancel?id=" + order.getId());
+                .setSuccessUrl(domainUrl + successUrl + order.getId())
+                .setCancelUrl(domainUrl + cancelUrl + order.getId())
+                .putMetadata("order_id", String.valueOf(order.getId()));
+
 
         List<OrderItem> items = order.getOrderItems();
         for (OrderItem item : items) {

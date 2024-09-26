@@ -36,30 +36,20 @@ public class ShoppingCartController {
     @GetMapping("/shopping-cart")
     public String getShoppingCart(Model model, Principal principal){
         User user = userService.findByUserName(principal.getName());
-        Cart cart = cartService.findCartByUser(user);
-        BigDecimal totalPrice = new BigDecimal(0);
-        List<CartItemDTO> cartItemDTOList = new ArrayList<>();
-        for(CartItem cartItem : cart.getCartItems()){
-            CartItemDTO cartItemDTO = cartItemMapper.cartItemToCartItemDTO(cartItem);
-            cartItemDTOList.add(cartItemDTO);
-            totalPrice = totalPrice.add(cartItemDTO.getTotalPrice());
-        }
-        CartDTO cartDTO = new CartDTO();
-        cartDTO.setCartItems(cartItemDTOList);
-        model.addAttribute("shoppingCart",cartDTO);
+        model.addAttribute("shoppingCart",cartService.getCartDTOByUser(user));
         return "shopping-cart";
     }
     @PostMapping("/shopping-cart/add")
     public @ResponseBody ResponseEntity<?> addToCart(@RequestBody AddCartRequest addCartRequest, Principal principal){
         System.out.println(addCartRequest);
         User user = userService.findByUserName(principal.getName());
-        return cartItemService.addItemToCart(addCartRequest,user);
+        return ResponseEntity.ok(cartItemService.addItemToCart(addCartRequest,user));
     }
     @PostMapping("/shopping-cart/delete")
     public @ResponseBody ResponseEntity<?> deleteCartItem(@RequestBody List<Long> cartIds,Principal principal){
         System.out.println(cartIds);
         User user = userService.findByUserName(principal.getName());
-        return cartService.deleteCartItem(cartIds,user);
+        return ResponseEntity.ok(cartService.deleteCartItem(cartIds,user));
 
     }
     @PostMapping("/shopping-cart/update-quantity")

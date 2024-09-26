@@ -68,7 +68,7 @@
                 <input type="number" id="quantity" class="form-control mt-3 w-50" placeholder="Enter quantity">
 
             </div>
-            <a class="btn btn-dark mt-3 w-50"  sec:authorize="isAnonymous()" th:href="@{/login}">My Account </a>
+            <a class="btn btn-dark mt-3 w-50"  sec:authorize="isAnonymous()" th:href="@{/signin}">Login</a>
 
             <button class="btn btn-dark mt-3 w-50" sec:authorize="isAuthenticated()" onclick="addToCart()"><strong>Add to Cart</strong></button>
         </div>
